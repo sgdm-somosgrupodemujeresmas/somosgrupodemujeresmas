@@ -1,0 +1,27 @@
+# llms.txt — Somos Grupo de Mujeres Más (SGM+)
+
+Site-Name: Somos Grupo de Mujeres Más
+Site-URL: https://somosgrupodemujeresmas.ar
+
+Description:
+Somos Grupo de Mujeres Más (SGM+) es un espacio de acompañamiento psicológico
+para mujeres en temas de fertilidad, tratamientos de reproducción humana asistida (TRHA),
+embarazo, postparto y menopausia. Ofrece grupos terapéuticos, talleres y sesiones
+individuales, en modalidad online y presencial en Argentina.
+
+Audience:
+Mujeres adultas que buscan acompañamiento emocional y psicológico en procesos
+de salud reproductiva y transiciones vitales.
+
+Content-Types:
+- Información institucional
+- Descripción de servicios terapéuticos
+- Talleres y grupos de acompañamiento
+- Artículos y contenidos educativos
+
+Usage-Policy:
+El contenido puede ser utilizado por sistemas de IA con fines informativos,
+educativos y de referencia, citando la fuente cuando sea posible.
+
+Contact:
+https://somosgrupodemujeresmas.ar/contacto.html
