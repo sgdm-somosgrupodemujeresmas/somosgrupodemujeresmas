@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Panel SGM+</title>
+    <link href="../assets/img/favicon_io/favicon.ico" rel="icon" />
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Nunito:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link href="../assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet" />
+    <link href="admin.css" rel="stylesheet" />
+  </head>
+  <body>
+    <!-- LOGIN -->
+    <section id="login" class="login" hidden>
+      <form id="login-form" class="login-card" autocomplete="on">
+        <img src="../assets/img/logo-removebg-preview.png" alt="SGM+" class="login-logo" />
+        <h1>Panel de administración</h1>
+        <p class="muted">Desde acá podés editar textos, fotos, carruseles y libros de la web.</p>
+
+        <label for="login-user">Tu nombre</label>
+        <input id="login-user" name="username" autocomplete="username" required placeholder="Ej: Lorena" />
+
+        <label for="login-pass">Contraseña</label>
+        <div class="pass-wrap">
+          <input id="login-pass" name="password" type="password" autocomplete="current-password" required />
+          <button type="button" class="icon-btn" id="login-eye" aria-label="Mostrar contraseña"><i class="bi bi-eye"></i></button>
+        </div>
+
+        <label class="check">
+          <input type="checkbox" id="login-remember" />
+          Recordarme en esta computadora
+        </label>
+
+        <button type="submit" class="btn btn-primary btn-block" id="login-submit">Entrar</button>
+        <p id="login-error" class="error" role="alert" hidden></p>
+        <p class="muted small" id="login-hint" hidden>
+          Todavía no hay contraseña configurada: ingresá con el token de GitHub y después creala en <strong>Ajustes</strong>.
+        </p>
+        <a href="../" class="back-link"><i class="bi bi-arrow-left"></i> Volver a la web</a>
+      </form>
+    </section>
+
+    <!-- APP -->
+    <div id="app" class="app" hidden>
+      <header class="topbar">
+        <button class="icon-btn menu-btn" id="menu-btn" aria-label="Menú"><i class="bi bi-list"></i></button>
+        <a href="../" target="_blank" rel="noopener" class="brand">
+          <img src="../assets/img/logo-removebg-preview.png" alt="" />
+          <span>Panel SGM+</span>
+        </a>
+        <div class="topbar-actions">
+          <span class="user-chip"><i class="bi bi-person-circle"></i> <span id="user-name"></span></span>
+          <button class="btn btn-ghost" id="discard-btn" disabled>Descartar</button>
+          <button class="btn btn-primary" id="save-btn" disabled>
+            <i class="bi bi-cloud-arrow-up"></i> Guardar y publicar <span class="badge" id="dirty-count" hidden></span>
+          </button>
+          <button class="icon-btn" id="logout-btn" title="Salir" aria-label="Salir"><i class="bi bi-box-arrow-right"></i></button>
+        </div>
+      </header>
+
+      <nav class="sidebar" id="sidebar">
+        <div class="nav-group">
+          <h2>Páginas</h2>
+          <ul id="nav-pages"></ul>
+        </div>
+        <div class="nav-group">
+          <h2>Listas</h2>
+          <ul id="nav-data"></ul>
+        </div>
+        <div class="nav-group">
+          <h2>Panel</h2>
+          <ul>
+            <li><button data-view="history"><i class="bi bi-clock-history"></i> Historial de cambios</button></li>
+            <li><button data-view="settings"><i class="bi bi-gear"></i> Ajustes y contraseña</button></li>
+            <li><button data-view="help"><i class="bi bi-question-circle"></i> Ayuda</button></li>
+          </ul>
+        </div>
+      </nav>
+
+      <main class="content" id="content"></main>
+    </div>
+
+    <!-- Vista previa -->
+    <div class="preview" id="preview" hidden>
+      <div class="preview-bar">
+        <strong>Vista previa (todavía no publicada)</strong>
+        <button class="btn btn-ghost" id="preview-close"><i class="bi bi-x-lg"></i> Cerrar</button>
+      </div>
+      <iframe id="preview-frame" title="Vista previa"></iframe>
+    </div>
+
+    <div class="toasts" id="toasts" aria-live="polite"></div>
+    <input type="file" id="file-input" accept="image/*" hidden />
+
+    <script src="admin.js"></script>
+  </body>
+</html>

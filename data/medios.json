@@ -1,0 +1,52 @@
+{
+  "medios": [
+    {
+      "type": "article",
+      "title": "Lorena Laserre lidera la cuenta Somos Grupo de Mujeres +",
+      "source": "Agenhoy",
+      "url": "https://agenhoy.com.ar/lorena-laserre-psicologa-lidera-la-cuenta-somos-grupos-de-mujeres-3/",
+      "date": "2025-05-01",
+      "cover": "assets/img/media/agenhoy.png"
+    },
+    {
+      "type": "article",
+      "title": "La importancia de los grupos de apoyo",
+      "source": "Nosotrasonline",
+      "url": "https://www.nosotrasonline.com.ar/magazin/nuestro-mundo/importancia-de-los-grupos-de-apoyo-nosotras-argentina/",
+      "date": "2025-10-01",
+      "cover": "assets/img/media/nosotrasonline.png"
+    },
+    {
+      "type": "article",
+      "title": "Cobertura relacionada: Para Ti - etiqueta 'Chicos'",
+      "source": "Para Ti",
+      "url": "https://www.parati.com.ar/lifestyle/infertilidad-y-tratamientos-de-reproduccion-asistida-como-manejar-su-impacto-en-el-vinculo-de-pareja/",
+      "date": "2025-05-10",
+      "cover": "assets/img/media/parati.png"
+    },
+    {
+      "type": "article",
+      "title": "Semana mundial de la lactancia materna",
+      "source": "Nosotrasonline",
+      "url": "https://www.nosotrasonline.com.ar/entre-nosotras/cuidado-femenino/semana-mundial-de-la-lactancia-materna-nosotras-argentina/",
+      "date": "2025-06-05",
+      "cover": "assets/img/media/nosotrasonline.png"
+    },
+    {
+      "type": "audio",
+      "title": "Entrevista: Programa Máquina (Radio Delta)",
+      "source": "RadioCut / Radio Delta",
+      "url": "https://ar.radiocut.fm/audiocut/lorena-laserre-licenciada-en-psicologia-programa-maquina-radio-delta/",
+      "date": "2024-11-20",
+      "cover": "assets/img/media/radiocut.png"
+    },
+    {
+      "type": "video",
+      "title": "Entrevista en YouTube",
+      "source": "YouTube",
+      "url": "https://www.youtube.com/watch?v=PeIl2mJt60A",
+      "date": "2023-09-01",
+      "cover": "assets/img/media/elinteractivo.png"
+    }
+  ]
+}

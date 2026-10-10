@@ -1,114 +1,13 @@
-const DATA_SERVICIOS = [
-  // ——— Pacientes ———
-  {
-    titulo: "Atención individual",
-    audiencia: ["paciente"],
-    duracion: "35 min",
-    formato: "Online / Presencial",
-    descripcion:
-      "Espacio clínico para acompañar procesos vinculados con la búsqueda de maternidad/paternidad, los deseos, los duelos, el origen, la crianza y la pareja. Trabajamos sobre el deseo, las esperas, el cansancio y la montaña rusa emocional que puede acompañar el camino de maternar.",
-    url: "https://docs.google.com/forms/d/e/1FAIpQLSfsVvvuaqPRgL_TAy0IXY1ZfDlZETRir6nJiA2iwX7NNhO_2A/viewform",
-    // brochure: "assets/img/servicios/brochure_single.png",
-    brochure: null,
-  },
-  {
-    titulo: "Grupos de apoyo",
-    audiencia: ["paciente"],
-    duracion: "2×90 min",
-    formato: "Grupo",
-    descripcion:
-      "Espacios íntimos y pequeños, coordinados por psicólogas especializadas. Confianza, pertenencia y herramientas para transitar el deseo de maternar: FIV/ICSI, ovodonación, espermodonación, monomarentalidad, dificultades reproductivas y duelos. Tu tribu para no hacerlo sola.",
-    url: "",
-    // brochure: "assets/img/servicios/brochure_circulo.png",
-    brochure: null,
-  },
-  // ——— Empresas ———
-  {
-    titulo: "Taller Bienestar laboral & fertilidad",
-    audiencia: ["empresa"],
-    duracion: "120 min",
-    formato: "In-company / Online",
-    descripcion:
-      "Concientización sin estigma y herramientas prácticas para líderes y equipos. Prevención de burnout y presentismo.",
-    url: "contacto.html",
-    brochure: null,
-  },
-  {
-    titulo: "Programa Cultura SGM+ (empresa)",
-    audiencia: ["empresa"],
-    duracion: "8 sem",
-    formato: "Programa",
-    descripcion:
-      "Implementación de políticas ad-hoc, comunicación interna y tercerización del apoyo emocional (grupal e individual).",
-    url: "contacto.html",
-    brochure: null,
-  },
-  {
-    titulo: "Pack comunicación sin estigma",
-    audiencia: ["empresa"],
-    duracion: "2–4 sem",
-    formato: "In-company / Remoto",
-    descripcion:
-      "Campañas y comunicación interna/externa para visibilizar fertilidad sin prejuicios. Piezas, guías y activaciones.",
-    url: "contacto.html",
-    brochure: null,
-  },
-  {
-    titulo: "Políticas y permisos de fertilidad",
-    audiencia: ["empresa"],
-    duracion: "4–6 sem",
-    formato: "Consultoría",
-    descripcion:
-      "Diseño/adaptación de políticas laborales, lineamientos para RR.HH. y líderes, y protocolo de confidencialidad.",
-    url: "contacto.html",
-    brochure: null,
-  },
-  // ——— Profesionales ———
-  {
-    titulo: "Formación en salud mental reproductiva",
-    audiencia: ["profesional"],
-    duracion: "8 módulos",
-    formato: "Online",
-    descripcion:
-      "Psicología perinatal, coordinación de grupos, ética del cuidado y diseño de intervenciones basadas en evidencia.",
-    url: "contacto.html",
-    brochure: null,
-  },
-  {
-    titulo: "Clínica de casos (supervisión)",
-    audiencia: ["profesional"],
-    duracion: "Mensual",
-    formato: "Grupal / Individual",
-    descripcion:
-      "Supervisión clínica con enfoque SGM+ para casos de infertilidad, duelos reproductivos y trabajo con grupos.",
-    url: "contacto.html",
-    brochure: null,
-  },
-  {
-    titulo: "Kits y guías de intervención",
-    audiencia: ["profesional"],
-    duracion: "On-demand",
-    formato: "Descargables",
-    descripcion:
-      "Guías para coordinación de grupos, hojas de trabajo, escalas y protocolos de derivación con enfoque SGM+.",
-    url: "contacto.html",
-    brochure: null,
-  },
-];
+// Datos: se editan desde /admin (data/servicios.json)
+let DATA_SERVICIOS = [];
+let INTRO_AUDIENCIA = {};
+
 const grid = document.getElementById("servicios-grid");
 const buttons = document.querySelectorAll(".audiencia-btn");
 const ctaBtn = document.getElementById("servicios-cta-btn");
 const introEl = document.getElementById("servicios-intro");
 let serviciosSwiper = null; // <- instancia global
 
-const INTRO_AUDIENCIA = {
-  paciente:
-    "Te acompañamos en el deseo de maternar, los tratamientos de fertilidad, los duelos y las decisiones que aparecen en el camino. Podés elegir espacios individuales o grupales según lo que necesites hoy.",
-  empresa:
-    "Acompañamos a las organizaciones a crear entornos laborales sin estigmas, con políticas, educación y apoyo que fortalecen el bienestar, la productividad y la inclusión.",
-  profesional:
-    "Formación, supervisión y recursos para profesionales que trabajan o quieren empezar a trabajar en salud mental reproductiva, acompañando deseos, duelos y proyectos de familia.",
-};
 /** Utilidades URL (sin provocar scroll) */
 function getAudFromURL() {
   const url = new URL(location.href);
@@ -180,8 +79,14 @@ buttons.forEach((b) =>
 );
 
 document.addEventListener("DOMContentLoaded", () => {
-  const audInicial = getAudFromURL();
-  render(audInicial);
+  fetch("data/servicios.json", { cache: "no-cache" })
+    .then((r) => r.json())
+    .then((data) => {
+      DATA_SERVICIOS = Array.isArray(data.servicios) ? data.servicios : [];
+      INTRO_AUDIENCIA = data.intros || {};
+    })
+    .catch((err) => console.error("No se pudo cargar data/servicios.json", err))
+    .finally(() => render(getAudFromURL()));
 
   serviciosSwiper = new Swiper(".servicios-swiper", {
     slidesPerView: 1,
@@ -218,5 +123,3 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-/** Init (URL awareness) */
-render(getAudFromURL());
