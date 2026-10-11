@@ -314,6 +314,17 @@ h6 {
     color-mix(in srgb, var(--nav-dropdown-color), transparent 90%);
 }
 
+.navmenu .dropdown ul a {
+  color: var(--nav-dropdown-color);
+}
+
+.navmenu .dropdown ul a:hover,
+.navmenu .dropdown ul .active,
+.navmenu .dropdown ul .active:focus {
+  color: var(--chocolate-suave);
+  background-color: var(--rosa-tiza);
+}
+
 .mobile-nav-active {
   overflow: hidden;
 }
