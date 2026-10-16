@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Nunito:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Nunito:wght@400;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link href="../assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet" />
@@ -20,8 +20,7 @@
     <section id="login" class="login" hidden>
       <form id="login-form" class="login-card" autocomplete="on">
         <img src="../assets/img/logo-removebg-preview.png" alt="SGM+" class="login-logo" />
-        <h1>Panel de administración</h1>
-        <p class="muted">Desde acá podés editar textos, fotos, carruseles y libros de la web.</p>
+        <h1>Panel de la web</h1>
 
         <label for="login-user">Tu nombre</label>
         <input id="login-user" name="username" autocomplete="username" required placeholder="Ej: Lorena" />
@@ -29,18 +28,18 @@
         <label for="login-pass">Contraseña</label>
         <div class="pass-wrap">
           <input id="login-pass" name="password" type="password" autocomplete="current-password" required />
-          <button type="button" class="icon-btn" id="login-eye" aria-label="Mostrar contraseña"><i class="bi bi-eye"></i></button>
+          <button type="button" class="eye-btn" id="login-eye" aria-label="Mostrar contraseña"><i class="bi bi-eye"></i> Ver</button>
         </div>
 
         <label class="check">
-          <input type="checkbox" id="login-remember" />
+          <input type="checkbox" id="login-remember" checked />
           Recordarme en esta computadora
         </label>
 
-        <button type="submit" class="btn btn-primary btn-block" id="login-submit">Entrar</button>
+        <button type="submit" class="btn btn-primary btn-big btn-block" id="login-submit">Entrar</button>
         <p id="login-error" class="error" role="alert" hidden></p>
         <p class="muted small" id="login-hint" hidden>
-          Todavía no hay contraseña configurada: ingresá con el token de GitHub y después creala en <strong>Ajustes</strong>.
+          Todavía no hay contraseña configurada: ingresá con el token de GitHub y después creala en «Cambiar contraseña».
         </p>
         <a href="../" class="back-link"><i class="bi bi-arrow-left"></i> Volver a la web</a>
       </form>
@@ -49,50 +48,17 @@
     <!-- APP -->
     <div id="app" class="app" hidden>
       <header class="topbar">
-        <button class="icon-btn menu-btn" id="menu-btn" aria-label="Menú"><i class="bi bi-list"></i></button>
-        <a href="../" target="_blank" rel="noopener" class="brand">
+        <button type="button" class="brand" id="home-btn">
           <img src="../assets/img/logo-removebg-preview.png" alt="" />
           <span>Panel SGM+</span>
-        </a>
+        </button>
         <div class="topbar-actions">
-          <span class="user-chip"><i class="bi bi-person-circle"></i> <span id="user-name"></span></span>
-          <button class="btn btn-ghost" id="discard-btn" disabled>Descartar</button>
-          <button class="btn btn-primary" id="save-btn" disabled>
-            <i class="bi bi-cloud-arrow-up"></i> Guardar y publicar <span class="badge" id="dirty-count" hidden></span>
-          </button>
-          <button class="icon-btn" id="logout-btn" title="Salir" aria-label="Salir"><i class="bi bi-box-arrow-right"></i></button>
+          <a href="../" target="_blank" rel="noopener" class="btn btn-ghost"><i class="bi bi-globe2"></i> <span class="hide-sm">Ver la web</span></a>
+          <button type="button" class="btn btn-ghost" id="logout-btn"><i class="bi bi-box-arrow-right"></i> <span class="hide-sm">Salir</span></button>
         </div>
       </header>
 
-      <nav class="sidebar" id="sidebar">
-        <div class="nav-group">
-          <h2>Páginas</h2>
-          <ul id="nav-pages"></ul>
-        </div>
-        <div class="nav-group">
-          <h2>Listas</h2>
-          <ul id="nav-data"></ul>
-        </div>
-        <div class="nav-group">
-          <h2>Panel</h2>
-          <ul>
-            <li><button data-view="history"><i class="bi bi-clock-history"></i> Historial de cambios</button></li>
-            <li><button data-view="settings"><i class="bi bi-gear"></i> Ajustes y contraseña</button></li>
-            <li><button data-view="help"><i class="bi bi-question-circle"></i> Ayuda</button></li>
-          </ul>
-        </div>
-      </nav>
-
       <main class="content" id="content"></main>
-    </div>
-
-    <!-- Vista previa -->
-    <div class="preview" id="preview" hidden>
-      <div class="preview-bar">
-        <strong>Vista previa (todavía no publicada)</strong>
-        <button class="btn btn-ghost" id="preview-close"><i class="bi bi-x-lg"></i> Cerrar</button>
-      </div>
-      <iframe id="preview-frame" title="Vista previa"></iframe>
     </div>
 
     <div class="toasts" id="toasts" aria-live="polite"></div>

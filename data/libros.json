@@ -1,0 +1,75 @@
+{
+  "libros": [
+    {
+      "titulo": "La osa Maia es mamá",
+      "subtitulo": "Simple donación",
+      "etiqueta": "Edad: 3-5",
+      "tapa": "assets/img/book/laosamaia1.webp",
+      "descripcion": "¿PUEDE UNA OSA SIN PAREJA SER MAMÁ?\nMaia es una osita muy divertida, curiosa e inquieta. Vive en un bosque lleno de colores. Tiene amigos y le gusta leer. Hace muchas cosas que le encantan y siempre soñó con ser mamá y sentir ese tipo de amor tan especial y único. Pero, ¿cómo podrá lograrlo?. Maia no tiene pareja. ¿Quiénes podrán ayudarla a cumplir ese sueño?. Acompañala a través de este cuento en su búsqueda maravillosa.",
+      "tiendas": [
+        { "nombre": "Concebir Tienda Nube", "url": "https://concebir.mitiendanube.com/productos/la-osa-maia-es-mama-edicion-en-papel-solo-envios-no-disponible-para-retirar/" },
+        { "nombre": "El Enebro Libros", "url": "https://www.elenebrolibros.com.ar/osa-maia-la-un-cuento-sobre-el-origen-de-familias-monopare-una-historia-de-lorena-laverre-de-laserre-lorena-vol-1-editorial-sd-tapa-blanda-edicion-edicion-mejorada-en-espanol/p/MLA54463124" },
+        { "nombre": "Abrazando Cuentos", "url": "https://www.abrazandocuentos.com.ar/productos/la-osa-maia-es-mama-simple-donacion/" },
+        { "nombre": "Amazon", "url": "https://www.amazon.com/-/es/gp/product/B09XZP84Z8?ref_=dbs_m_mng_rwt_calw_tpbk_0&storeType=ebooks" }
+      ]
+    },
+    {
+      "titulo": "La osa Maia es mamá",
+      "subtitulo": "Doble donación",
+      "etiqueta": "Edad: 3-5",
+      "tapa": "assets/img/book/laosamaia.webp",
+      "descripcion": "¿PUEDE UNA OSA SIN PAREJA SER MAMÁ?\nMaia es una osita muy divertida, curiosa e inquieta. Vive en un bosque lleno de colores. Tiene amigos y le gusta leer. Hace muchas cosas que le encantan y siempre soñó con ser mamá y sentir ese tipo de amor tan especial y único. Pero, ¿cómo podrá lograrlo?. Maia no tiene pareja. También necesitará donante de óvulos. ¿Quiénes podrán ayudarla a cumplir ese sueño?. Acompañala a través de este cuento en su búsqueda maravillosa. Autora: Lorena Laserre",
+      "tiendas": [
+        { "nombre": "Abrazando Cuentos", "url": "https://www.abrazandocuentos.com.ar/productos/la-osa-maia-es-mama-doble-donacion/" },
+        { "nombre": "El Enebro Libros", "url": "https://www.elenebrolibros.com.ar/MLA-2269451392-osa-maia-es-mama-la-doble-donacion-_JM" }
+      ]
+    },
+    {
+      "titulo": "La pingüina Tina",
+      "subtitulo": "Edición para colorear",
+      "etiqueta": "Edad: 3-5",
+      "tapa": "assets/img/book/penguin.webp",
+      "descripcion": "Este cuento para niñxs pequeños para colorear relata la historia de un nacimiento por ovodonación. Mientras tu hijo colorea el cuento, la historia dice cómo Tina -que no podía tener hijos de sus propios huevos- llega a ser mamá de Toto. Es simple y breve, muy lindo. Y por analogías relata la historia de la donación de óvulos para niños pequeños.\n\nAutor: Lorena Laserre. Editorial: Grupo de mujeres. ISBN: 9789878837000 @somosgrupodemujeresmas",
+      "tiendas": [
+        { "nombre": "Abrazando Cuentos", "url": "https://www.abrazandocuentos.com.ar/productos/la-pinguina-tina/" },
+        { "nombre": "Amazon", "url": "https://www.amazon.com/-/es/gp/product/B09XSSB638?ref_=dbs_m_mng_rwt_calw_tpbk_2&storeType=ebooks" },
+        { "nombre": "Concebir Tienda Nube", "url": "https://concebir.mitiendanube.com/productos/la-pinguina-tina-en-papel-para-colorear-solo-envios-no-disponible-para-retirar/" }
+      ]
+    },
+    {
+      "titulo": "Cómo nació Inti",
+      "subtitulo": "Un cuento de gestión solidaria",
+      "etiqueta": "Edad: 3-5",
+      "tapa": "assets/img/book/delfin.png",
+      "descripcion": "Fundamentalmente, lo que se tiene en cuenta es la voluntad procreacional. La familia es una construcción sociocultural y se basa en el deseo, en el amor, justamente la voluntad. Ya no se trata únicamente del vínculo sanguíneo o genético, sino de las elecciones de las personas. Ni la genética ni la biología garantizan el amor, eso es lo que manifiestan las familias diversas. Los niños se lo toman de una manera muy natural y los adultos tenemos que plantearnos el hecho de que somos una generación bisagra.",
+      "tiendas": [
+        { "nombre": "Concebir Tienda Nube", "url": "https://concebir.mitiendanube.com/productos/como-nacio-inti-edicion-en-papel-solo-envios-no-disponible-para-retirar/" },
+        { "nombre": "Abrazando Cuentos", "url": "https://www.abrazandocuentos.com.ar/productos/como-nacio-inti/" }
+      ]
+    },
+    {
+      "titulo": "Mis mamás",
+      "subtitulo": "Un cuento de amor",
+      "etiqueta": "Familias y género",
+      "tapa": "assets/img/book/3.webp",
+      "descripcion": "Hay familia cuando hay deseo, cuando hay amor y verdad. Las formas son muchas, cada vez más diversas y diferentes del modelo heteronormativo. Por más historias de colores y libertad y menos ataduras y encierros.",
+      "tiendas": [
+        { "nombre": "Abrazando Cuentos", "url": "https://www.abrazandocuentos.com.ar/productos/mis-mamas-un-cuento-de-amor/" },
+        { "nombre": "Amazon", "url": "https://www.amazon.com/-/es/gp/product/B09XT423PC?ref_=dbs_m_mng_rwt_calw_tpbk_3&storeType=ebooks" },
+        { "nombre": "Concebir Tienda Nube", "url": "https://concebir.mitiendanube.com/productos/mis-mamas-un-cuento-de-amor-edicion-en-papel-solo-envios-no-disponible-para-retirar/" }
+      ]
+    },
+    {
+      "titulo": "¿Cómo nacen los dinos?",
+      "subtitulo": "",
+      "etiqueta": "Familias y género",
+      "tapa": "assets/img/book/dinos.webp",
+      "descripcion": "Dino y Dina querían ser papás y agrandar la familia. Luego de varios intentos el Dr. les dijo que iban a necesitar la ayuda de otros dinos. Un cuento de Lorena Laserre para hablar con los niños sobre las técnicas de reproducción asistida. Lorena Laserre es Licenciada en Psicología y docente especializada en trastornos de reproducción humana Somos Grupo de Mujeres +.",
+      "tiendas": [
+        { "nombre": "Abrazando Cuentos", "url": "https://www.abrazandocuentos.com.ar/productos/como-nacen-los-dinos/" },
+        { "nombre": "Amazon", "url": "https://www.amazon.com/-/es/gp/product/B09WZFNZND?ref_=dbs_m_mng_rwt_calw_tpbk_1&storeType=ebooks" },
+        { "nombre": "Concebir Tienda Nube", "url": "https://concebir.mitiendanube.com/productos/como-nacen-los-dinos-edicion-en-papel-solo-envios-no-disponible-para-retirar/" }
+      ]
+    }
+  ]
+}

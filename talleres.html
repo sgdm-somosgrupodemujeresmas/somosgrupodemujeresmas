@@ -284,7 +284,7 @@
         </div>
 
         <div class="container" data-aos="fade-up">
-          <div class="swiper talleres-swiper init-swiper">
+          <div class="swiper talleres-swiper">
             <script type="application/json" class="swiper-config">
               {
                 "loop": true,
@@ -300,129 +300,8 @@
               }
             </script>
 
-            <div class="swiper-wrapper">
-              <!-- Slide 1 -->
-              <div class="swiper-slide">
-                <article class="taller-card-xl">
-                  <div class="taller-card-xl__content">
-                    <span class="badge">Taller online</span>
-                    <h3>Primeros Pasos en TRHA</h3>
-                    <p>
-                      Un taller para ordenar información, bajar la ansiedad y
-                      trazar un plan emocional al iniciar reproducción asistida.
-                      <strong>Duración:</strong> 2 h ·
-                      <strong>Modalidad:</strong> Online
-                    </p>
-                    <a
-                      href="https://go.hotmart.com/K102413472A?dp=1"
-                      class="btn-primary"
-                      target="_blank"
-                      rel="noopener"
-                      >Comprar</a
-                    >
-                  </div>
-
-                  <div class="taller-card-xl__media">
-                    <img
-                      src="https://static-media.hotmart.com/CP0XYqNQ4U_HCjfAB_r8Vn6LuRg=/300x300/smart/filters:format(webp):background_color(white)/hotmart/product_pictures/ecb936b0-90de-420d-bb3e-9d15953a24e5/trha.png?w=920"
-                      alt="Primeros Pasos en TRHA"
-                    />
-                  </div>
-                </article>
-              </div>
-
-              <!-- Slide 2 -->
-              <div class="swiper-slide">
-                <article class="taller-card-xl">
-                  <div class="taller-card-xl__content">
-                    <span class="badge">Taller online</span>
-                    <h3>Taller de Alimentación Complementaria</h3>
-                    <p>
-                      Recomendaciones claras y material descargable. Espacio de
-                      preguntas en vivo.
-                      <strong>Duración:</strong> 2 h ·
-                      <strong>Modalidad:</strong> Online
-                    </p>
-                    <a
-                      href="https://go.hotmart.com/D102452601L?dp=1"
-                      class="btn-primary"
-                      target="_blank"
-                      rel="noopener"
-                      >Comprar</a
-                    >
-                  </div>
-
-                  <div class="taller-card-xl__media">
-                    <img
-                      src="https://static-media.hotmart.com/xXxQAP9M7KucRK5kSWMBS0MBNl4=/300x300/smart/filters:format(webp):background_color(white)/hotmart/product_pictures/092473b7-b913-41b1-950f-710a3ced4fe8/talleralimentacioncomplementaria.png?w=920"
-                      alt="Taller de Alimentación Complementaria"
-                    />
-                  </div>
-                </article>
-              </div>
-
-              <!-- Slide 3 -->
-              <div class="swiper-slide">
-                <article class="taller-card-xl">
-                  <div class="taller-card-xl__content">
-                    <span class="badge">Taller online</span>
-                    <h3>Duelos durante la búsqueda de maternidad</h3>
-                    <p>
-                      Nombrar, comprender y transitar el duelo en el contexto de
-                      la fertilidad.
-                      <strong>Duración:</strong> 2 h ·
-                      <strong>Modalidad:</strong> Online
-                    </p>
-                    <a
-                      href="https://go.hotmart.com/F102455334U?dp=1"
-                      class="btn-primary"
-                      target="_blank"
-                      rel="noopener"
-                      >Comprar</a
-                    >
-                  </div>
-
-                  <div class="taller-card-xl__media">
-                    <img
-                      src="https://static-media.hotmart.com/GlzXmBz4xNp-gj0A6c4zBJdpo6w=/300x300/smart/filters:format(webp):background_color(white)/hotmart/product_pictures/1b0cff71-a4e1-4af1-b843-459924a87db3/ChatGPTImage16oct202515_57_08.png?w=920"
-                      alt="Taller de Duelos en la búsqueda de maternidad"
-                    />
-                  </div>
-                </article>
-              </div>
-              <!-- Slide 4 -->
-              <div class="swiper-slide">
-                <article class="taller-card-xl">
-                  <div class="taller-card-xl__content">
-                    <span class="badge">Taller online</span>
-                    <h3>Ovodonación (Ovo): emociones, duelos y decisiones</h3>
-                    <p>
-                      Un espacio para comprender el proceso, hablar de lo no
-                      dicho y transitar las emociones con herramientas claras.
-                      <strong>Duración:</strong> 2 h ·
-                      <strong>Modalidad:</strong> Online
-                    </p>
-
-                    <a
-                      href="https://go.hotmart.com/K103691052F?dp=1"
-                      class="btn-primary"
-                      target="_blank"
-                      rel="noopener"
-                    >
-                      Comprar
-                    </a>
-                  </div>
-
-                  <div class="taller-card-xl__media">
-                    <!-- Si todavía no tenés imagen, dejá esta. Ideal: crear una en assets/img/talleres/ovo.jpg -->
-                    <img
-                      src="https://static-media.hotmart.com/QLlo-f8RYTkFaJjcLage_hlPUUM=/295x165/smart/filters:quality(100)/hotmart/product_pictures/d5dac59e-c67e-4521-876e-f95a715e377d/ChatGPTImage6ene202609_03_17pm.png"
-                      alt="Taller Ovodonación"
-                      loading="lazy"
-                    />
-                  </div>
-                </article>
-              </div>
+            <div class="swiper-wrapper" id="talleres-lista">
+              <!-- Se completa desde data/talleres.json (editable en /admin) -->
             </div>
 
             <div class="swiper-pagination talleres-pagination mt-4"></div>
@@ -524,5 +403,6 @@
     ></script>
     <script src="assets/vendor/aos/aos.js" defer></script>
     <script src="assets/js/main.js" defer></script>
+    <script src="assets/js/contenido.js" defer></script>
   </body>
 </html>

@@ -1,6 +1,8 @@
-/* Panel de administración SGM+
- * - Lee y escribe los archivos de la web directamente en GitHub (rama gh-pages).
- * - Cada "Guardar y publicar" es un commit firmado con el nombre de quien entró.
+/* Panel de administración SGM+ (versión simple)
+ * - Sólo edita lo que cambia seguido: próximo taller, talleres, libros,
+ *   «En los medios» y servicios. Todo vive en data/*.json.
+ * - Cada «Guardar y publicar» es un commit en GitHub (rama gh-pages)
+ *   firmado con el nombre de quien entró.
  * - Login: nombre + contraseña. La contraseña descifra el token de GitHub
  *   guardado cifrado en admin/acceso.json (o se puede pegar el token directo).
  */
@@ -20,113 +22,151 @@
     kdfIterations: 600000,
   };
 
-  const PAGES = [
-    { file: "index.html", label: "Inicio", icon: "bi-house" },
-    { file: "servicios.html", label: "Servicios", icon: "bi-briefcase" },
-    { file: "talleres.html", label: "Talleres", icon: "bi-easel" },
-    { file: "sesiones.html", label: "Sesiones", icon: "bi-calendar3" },
-    { file: "contacto.html", label: "Contacto", icon: "bi-envelope" },
-    { file: "test.html", label: "Ferti-test", icon: "bi-clipboard-check" },
-  ];
-
   const AUDIENCIAS = [
     ["paciente", "Pacientes"],
     ["empresa", "Empresas"],
     ["profesional", "Profesionales"],
   ];
 
-  // Listas que la web arma desde archivos JSON (data/*.json)
-  const DATASETS = [
+  const TIPOS_MEDIO = [
+    ["article", "Nota escrita", "bi-newspaper"],
+    ["audio", "Audio / radio", "bi-mic"],
+    ["video", "Video", "bi-play-btn"],
+  ];
+
+  // Cada sección del panel. `list` = lista de cosas; `single` = un solo formulario.
+  const SECTIONS = [
+    {
+      id: "proximo",
+      kind: "single",
+      file: "data/proximo-taller.json",
+      title: "Próximo taller",
+      tileText: "Cambiar la fecha de «Cupos limitados» y el texto del aviso",
+      icon: "bi-calendar-heart",
+      page: "./#call-to-action",
+      fields: [
+        { key: "fecha", label: "¿Hasta qué día se pueden inscribir?", type: "date", required: true, big: true,
+          hint: "La cuenta regresiva de la web llega a cero al terminar ese día." },
+        { key: "titulo", label: "Título", type: "text", required: true },
+        { key: "texto", label: "Texto", type: "textarea" },
+        { key: "etiqueta", label: "Cartelito de arriba", type: "text", hint: "Ej: Cupos limitados" },
+        { key: "url", label: "¿A dónde lleva el botón «Quiero inscribirme»?", type: "url",
+          hint: "Pegá el enlace de inscripción. Si no tenés uno, dejá talleres.html" },
+        { key: "imagen", label: "Foto", type: "image" },
+      ],
+    },
+    {
+      id: "talleres",
+      kind: "list",
+      file: "data/talleres.json",
+      key: "talleres",
+      title: "Talleres",
+      tileText: "Agregar un taller nuevo o cambiar uno existente",
+      icon: "bi-easel",
+      page: "talleres.html",
+      one: "taller",
+      sortable: true,
+      itemTitle: (t) => t.titulo,
+      itemSub: (t) => [t.modalidad, t.duracion].filter(Boolean).join(" · "),
+      itemImg: (t) => t.imagen,
+      blank: () => ({ etiqueta: "Taller online", titulo: "", descripcion: "", duracion: "2 h", modalidad: "Online", url: "", boton: "Comprar", imagen: "" }),
+      fields: [
+        { key: "titulo", label: "Nombre del taller", type: "text", required: true },
+        { key: "descripcion", label: "¿De qué se trata?", type: "textarea" },
+        { key: "imagen", label: "Foto del taller", type: "image" },
+        { key: "duracion", label: "Duración", type: "text", half: true, hint: "Ej: 2 h" },
+        { key: "modalidad", label: "Modalidad", type: "text", half: true, hint: "Ej: Online" },
+        { key: "url", label: "Enlace para comprar o inscribirse", type: "url", hint: "Ej: el enlace de Hotmart" },
+        { key: "boton", label: "Texto del botón", type: "text", half: true, hint: "Ej: Comprar, Inscribirme" },
+        { key: "etiqueta", label: "Cartelito de arriba", type: "text", half: true, hint: "Ej: Taller online" },
+      ],
+    },
+    {
+      id: "libros",
+      kind: "list",
+      file: "data/libros.json",
+      key: "libros",
+      title: "Libros",
+      tileText: "Agregar un libro nuevo o cambiar uno existente",
+      icon: "bi-book",
+      page: "./#related-books",
+      one: "libro",
+      sortable: true,
+      itemTitle: (b) => [b.titulo, b.subtitulo].filter(Boolean).join(" — "),
+      itemSub: (b) => b.etiqueta,
+      itemImg: (b) => b.tapa,
+      blank: () => ({ titulo: "", subtitulo: "", etiqueta: "", tapa: "", descripcion: "", tiendas: [{ nombre: "", url: "" }] }),
+      fields: [
+        { key: "titulo", label: "Título del libro", type: "text", required: true },
+        { key: "subtitulo", label: "Subtítulo (opcional)", type: "text" },
+        { key: "tapa", label: "Foto de la tapa", type: "image" },
+        { key: "etiqueta", label: "Cartelito sobre la tapa (opcional)", type: "text", hint: "Ej: Edad: 3-5" },
+        { key: "descripcion", label: "Descripción", type: "textarea" },
+        { key: "tiendas", label: "¿Dónde se puede comprar?", type: "tiendas" },
+      ],
+    },
     {
       id: "medios",
+      kind: "list",
       file: "data/medios.json",
-      label: "En los medios",
+      key: "medios",
+      title: "En los medios",
+      tileText: "Agregar una nota, un audio o un video donde salimos",
       icon: "bi-newspaper",
-      intro: "Notas, entrevistas y videos que aparecen en la sección «En los medios» del Inicio. Se ordenan solos por fecha (la más nueva primero).",
-      lists: [
-        {
-          key: "medios",
-          label: "Apariciones en medios",
-          itemLabel: "Nota",
-          titleField: "title",
-          thumbField: "cover",
-          blank: { type: "article", title: "Nueva nota", source: "", url: "", date: "", cover: "" },
-          fields: [
-            { key: "title", label: "Título", type: "text" },
-            { key: "type", label: "Tipo", type: "select", options: [["article", "Nota / artículo"], ["audio", "Audio / radio"], ["video", "Video"]] },
-            { key: "source", label: "Medio (ej: Para Ti, YouTube)", type: "text", half: true },
-            { key: "date", label: "Fecha", type: "date", half: true },
-            { key: "url", label: "Enlace a la nota", type: "url" },
-            { key: "cover", label: "Imagen / logo del medio", type: "image" },
-          ],
-        },
+      page: "./#medios",
+      one: "aparición",
+      oneArticle: "una",
+      sortable: false,
+      sortNote: "Se ordenan solas por fecha: la más nueva aparece primero.",
+      compare: (a, b) => (b.date || "").localeCompare(a.date || ""),
+      itemTitle: (m) => m.title,
+      itemSub: (m) => [(TIPOS_MEDIO.find((t) => t[0] === m.type) || [])[1], m.source, fmtDate(m.date)].filter(Boolean).join(" · "),
+      itemImg: (m) => m.cover,
+      blank: () => ({ type: "article", title: "", source: "", url: "", date: todayISO(), cover: "" }),
+      fields: [
+        { key: "type", label: "¿Qué es?", type: "tipo" },
+        { key: "title", label: "Título", type: "text", required: true },
+        { key: "url", label: "Enlace (a dónde lleva el botón «Ver»)", type: "url", required: true,
+          hint: "Copiá la dirección de la nota, el audio o el video y pegala acá." },
+        { key: "source", label: "Medio", type: "text", half: true, hint: "Ej: Para Ti, Radio Delta, YouTube" },
+        { key: "date", label: "Fecha", type: "date", half: true },
+        { key: "cover", label: "Imagen o logo del medio", type: "image", logos: true,
+          hint: "Si es un video de YouTube y no ponés imagen, se usa la del video." },
       ],
     },
     {
       id: "servicios",
+      kind: "list",
       file: "data/servicios.json",
-      label: "Servicios",
-      icon: "bi-grid",
-      intro: "Tarjetas de la página Servicios. Cada servicio aparece en la pestaña del público que marques (pacientes, empresas o profesionales).",
-      objects: [
-        {
-          key: "intros",
-          label: "Texto introductorio de cada pestaña",
-          fields: AUDIENCIAS.map(([k, l]) => ({ key: k, label: l, type: "textarea" })),
-        },
+      key: "servicios",
+      title: "Servicios",
+      tileText: "Agregar, cambiar o quitar servicios",
+      icon: "bi-heart",
+      page: "servicios.html",
+      one: "servicio",
+      sortable: true,
+      itemTitle: (s) => s.titulo,
+      itemSub: (s) => (s.audiencia || []).map((a) => (AUDIENCIAS.find((x) => x[0] === a) || [, a])[1]).join(", "),
+      blank: () => ({ titulo: "", audiencia: ["paciente"], duracion: "", formato: "", descripcion: "", url: "contacto.html", brochure: null }),
+      fields: [
+        { key: "titulo", label: "Nombre del servicio", type: "text", required: true },
+        { key: "audiencia", label: "¿Para quién es?", type: "checks", options: AUDIENCIAS,
+          hint: "Marcá una o más. El servicio aparece en esas pestañas." },
+        { key: "descripcion", label: "Descripción", type: "textarea" },
+        { key: "formato", label: "Formato", type: "text", half: true, hint: "Ej: Online / Presencial" },
+        { key: "duracion", label: "Duración", type: "text", half: true, hint: "Ej: 90 min" },
+        { key: "url", label: "¿A dónde lleva el botón «Quiero más info»?", type: "url",
+          hint: "Si no sabés, dejá contacto.html" },
+        { key: "brochure", label: "Enlace al programa (opcional)", type: "url", nullable: true,
+          hint: "Si lo completás, aparece el botón «Ver programa»." },
       ],
-      lists: [
-        {
-          key: "servicios",
-          label: "Servicios",
-          itemLabel: "Servicio",
-          titleField: "titulo",
-          blank: { titulo: "Nuevo servicio", audiencia: ["paciente"], duracion: "", formato: "", descripcion: "", url: "contacto.html", brochure: null },
-          fields: [
-            { key: "titulo", label: "Título", type: "text" },
-            { key: "audiencia", label: "Se muestra para", type: "checks", options: AUDIENCIAS },
-            { key: "formato", label: "Formato (ej: Online / Presencial)", type: "text", half: true },
-            { key: "duracion", label: "Duración (ej: 90 min)", type: "text", half: true },
-            { key: "descripcion", label: "Descripción", type: "textarea" },
-            { key: "url", label: "Enlace del botón «Quiero más info»", type: "url" },
-            { key: "brochure", label: "Enlace al programa (opcional, muestra el botón «Ver programa»)", type: "url", nullable: true },
-          ],
-        },
-      ],
+      extra: {
+        key: "intros",
+        title: "Textos de cada pestaña",
+        fields: AUDIENCIAS.map(([k, l]) => ({ key: k, label: "Texto para " + l, type: "textarea" })),
+      },
     },
   ];
-
-  // Nombres amigables para las secciones de cada página (por id)
-  const SECTION_NAMES = {
-    hero: "Portada (carrusel principal)",
-    about: "Sobre nosotras",
-    "about-author": "Lorena Laserre (bio y fotos)",
-    impacto: "Impacto emocional",
-    "bio-hormonal": "Biografía hormonal",
-    menopausia: "Menopausia",
-    varones: "También para varones",
-    servicios: "Servicios",
-    testimonios: "Testimonios",
-    "related-books": "Libros",
-    talleres: "Talleres",
-    medios: "En los medios",
-    faq: "Preguntas frecuentes",
-    "call-to-action": "Próximo taller (cuenta regresiva)",
-    agenda: "Sesiones individuales",
-    contact: "Contacto",
-    footer: "Pie de página",
-  };
-
-  // Partes que no se editan desde el panel (las maneja el código)
-  const SKIP_SELECTOR = [
-    "script", "style", "svg", "noscript", "template", "form", "nav",
-    ".swiper-pagination", ".hero-overlay", ".media-filters", "#media-grid",
-    "#servicios-grid", ".emotion-bar", ".countdown > div", "button:not([data-links])",
-    'a[href^="javascript"]', ".copyright", ".credits",
-  ].join(",");
-
-  const INLINE_TAGS = new Set(["STRONG", "B", "EM", "I", "U", "SMALL", "BR", "A", "SPAN", "SUP", "SUB", "MARK", "S", "ABBR", "CODE"]);
-  const LIST_ITEM_TAGS = new Set(["DIV", "LI", "ARTICLE", "A", "SPAN"]);
 
   // =========================
   // ESTADO
@@ -134,11 +174,9 @@
   const state = {
     user: null,
     token: null,
-    view: null,
-    pages: {}, // file -> { doc, sha, dirty }
-    data: {}, // file -> { json, sha, dirty }
-    uploads: new Map(), // path -> { b64, url }
     canPages: true,
+    uploads: new Map(), // ruta -> { b64, url }
+    dirty: false, // hay un formulario con cambios sin guardar
   };
 
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -147,7 +185,6 @@
     for (const [k, v] of Object.entries(attrs)) {
       if (v == null || v === false) continue;
       if (k === "class") n.className = v;
-      else if (k === "html") n.innerHTML = v;
       else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
       else n.setAttribute(k, v === true ? "" : v);
     }
@@ -158,11 +195,12 @@
     return n;
   };
   const icon = (name) => el("i", { class: "bi " + name, "aria-hidden": "true" });
+  const clone = (o) => JSON.parse(JSON.stringify(o));
 
   // =========================
   // UTILIDADES
   // =========================
-  function toast(msg, kind = "", ms = 4500) {
+  function toast(msg, kind = "", ms = 5000) {
     const t = el("div", { class: "toast " + kind }, msg);
     $("#toasts").append(t);
     setTimeout(() => t.remove(), ms);
@@ -192,7 +230,20 @@
     return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
   }
 
-  function clean(text, max = 60) {
+  function todayISO() {
+    const d = new Date();
+    const p = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  }
+
+  function fmtDate(iso, long = false) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(iso || "")) return "";
+    const [y, m, d] = iso.split("-").map(Number);
+    const opts = long ? { weekday: "long", day: "numeric", month: "long", year: "numeric" } : { day: "numeric", month: "short", year: "numeric" };
+    return new Date(y, m - 1, d).toLocaleDateString("es-AR", opts);
+  }
+
+  function clean(text, max = 80) {
     const t = (text || "").replace(/\s+/g, " ").trim();
     return t.length > max ? t.slice(0, max - 1) + "…" : t;
   }
@@ -254,12 +305,12 @@
     const ref = await gh(repoPath(`/git/ref/heads/${CFG.branch}`));
     const headSha = ref.object.sha;
 
-    // ¿Alguien guardó la misma página mientras editábamos?
+    // ¿Alguien guardó lo mismo mientras editábamos?
     for (const f of files) {
       if (f.baseSha === undefined) continue;
       const current = await fileSha(f.path, headSha);
       if (current !== f.baseSha) {
-        const e = new Error(`«${f.path}» fue modificada por otra persona mientras editabas.`);
+        const e = new Error("Alguien más guardó cambios en esta sección mientras editabas.");
         e.conflict = f.path;
         throw e;
       }
@@ -387,7 +438,7 @@
         try {
           token = await decryptToken(box, pass);
         } catch {
-          throw new Error("Contraseña incorrecta.");
+          throw new Error("La contraseña no es correcta. Revisá mayúsculas y espacios y probá de nuevo.");
         }
       }
       state.user = user;
@@ -395,7 +446,7 @@
       try {
         await verifyToken();
       } catch (e) {
-        if (e.status === 401) throw new Error("La clave de acceso venció o fue revocada. Hay que generar un token nuevo en GitHub.");
+        if (e.status === 401) throw new Error("La clave de acceso venció. Avisale a Patricio.");
         throw e;
       }
       writeSession($("#login-remember").checked);
@@ -413,512 +464,550 @@
   }
 
   function logout() {
-    if (hasChanges() && !confirm("Tenés cambios sin guardar. ¿Salir igual y perderlos?")) return;
+    if (!confirmLeave()) return;
     clearSession();
     state.token = null;
-    state.pages = {};
-    state.data = {};
-    state.uploads.clear();
+    location.hash = "";
     location.reload();
   }
 
   // =========================
-  // APP
+  // NAVEGACIÓN
   // =========================
   function startApp() {
     $("#login").hidden = true;
     $("#app").hidden = false;
-    $("#user-name").textContent = state.user;
-    buildNav();
-    const fromHash = decodeURIComponent(location.hash.slice(1));
-    go(fromHash || "page:index.html");
+    route();
   }
 
-  function buildNav() {
-    const pages = $("#nav-pages");
-    pages.innerHTML = "";
-    for (const p of PAGES) {
-      pages.append(el("li", {}, el("button", { "data-view": "page:" + p.file }, icon(p.icon), p.label)));
-    }
-    const data = $("#nav-data");
-    data.innerHTML = "";
-    for (const d of DATASETS) {
-      data.append(el("li", {}, el("button", { "data-view": "data:" + d.file }, icon(d.icon), d.label)));
-    }
-  }
-
-  function refreshNav() {
-    document.querySelectorAll(".sidebar button[data-view]").forEach((b) => {
-      const v = b.dataset.view;
-      b.classList.toggle("active", v === state.view);
-      const [kind, file] = v.split(":");
-      const entry = kind === "page" ? state.pages[file] : kind === "data" ? state.data[file] : null;
-      const dot = b.querySelector(".dot");
-      if (entry && entry.dirty && !dot) b.append(el("span", { class: "dot", title: "Cambios sin guardar" }));
-      if ((!entry || !entry.dirty) && dot) dot.remove();
-    });
-  }
-
-  function hasChanges() {
-    return Object.values(state.pages).some((p) => p.dirty) || Object.values(state.data).some((d) => d.dirty);
-  }
-
-  function markDirty(kind, file) {
-    const entry = kind === "page" ? state.pages[file] : state.data[file];
-    if (entry) entry.dirty = true;
-    updateSaveBar();
-  }
-
-  function updateSaveBar() {
-    const n = Object.values(state.pages).filter((p) => p.dirty).length + Object.values(state.data).filter((d) => d.dirty).length;
-    $("#save-btn").disabled = n === 0;
-    $("#discard-btn").disabled = n === 0;
-    $("#dirty-count").hidden = n === 0;
-    $("#dirty-count").textContent = n;
-    refreshNav();
-  }
-
-  async function go(view) {
-    if (!/^(page|data):|^(history|settings|help)$/.test(view)) view = "page:index.html";
-    state.view = view;
-    history.replaceState(null, "", "#" + view);
-    $("#sidebar").classList.remove("open");
-    refreshNav();
-    const content = $("#content");
-    content.innerHTML = '<div class="loading"><i class="bi bi-arrow-repeat spin"></i> Cargando…</div>';
-    try {
-      const [kind, file] = view.split(":");
-      if (kind === "page") await renderPage(file);
-      else if (kind === "data") await renderDataset(file);
-      else if (kind === "history") await renderHistory();
-      else if (kind === "settings") renderSettings();
-      else if (kind === "help") renderHelp();
-    } catch (e) {
-      console.error(e);
-      content.innerHTML = "";
-      content.append(el("div", { class: "card" }, el("h2", {}, "No se pudo cargar"), el("p", { class: "error" }, e.message)));
-    }
-    window.scrollTo(0, 0);
-  }
-
-  // =========================
-  // EDITOR DE PÁGINAS (HTML)
-  // =========================
-  async function loadPage(file, force = false) {
-    if (state.pages[file] && !force) return state.pages[file];
-    const { text, sha } = await readFile(file);
-    const doc = new DOMParser().parseFromString(text, "text/html");
-    state.pages[file] = { doc, sha, dirty: false };
-    return state.pages[file];
-  }
-
-  function serializePage(doc) {
-    return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML + "\n";
-  }
-
-  async function renderPage(file) {
-    const page = PAGES.find((p) => p.file === file);
-    const entry = await loadPage(file);
-    const doc = entry.doc;
-    const content = $("#content");
-    content.innerHTML = "";
-    const ctx = { kind: "page", file };
-
-    content.append(
-      el("div", { class: "view-head" },
-        el("div", {},
-          el("h1", {}, page ? page.label : file),
-          el("p", { class: "muted" }, "Abrí una sección para editar sus textos, fotos y carruseles.")),
-        el("div", { class: "actions" },
-          el("button", { class: "btn btn-ghost", onclick: () => openPreview(file) }, icon("bi-eye"), "Vista previa"),
-          el("a", { class: "btn btn-ghost", href: "../" + (file === "index.html" ? "" : file), target: "_blank", rel: "noopener" }, icon("bi-box-arrow-up-right"), "Ver publicada")))
-    );
-
-    // SEO
-    content.append(makeBlock("Google y redes sociales (SEO)", "título y descripción", () => seoFields(doc, ctx)));
-
-    // Secciones
-    const sections = [...doc.querySelectorAll("main section, main > .section, footer")].filter(
-      (s, i, arr) => !arr.some((o) => o !== s && o.contains(s))
-    );
-    for (const sec of sections) {
-      const id = sec.id || (sec.tagName === "FOOTER" ? "footer" : "");
-      const h = sec.querySelector("h1, h2");
-      const name = SECTION_NAMES[id] || (h ? clean(h.textContent, 50) : "Sección");
-      const tag = h && SECTION_NAMES[id] ? clean(h.textContent, 40) : "";
-      content.append(makeBlock(name, tag !== name ? tag : "", () => sectionFields(sec, ctx)));
-    }
-  }
-
-  function makeBlock(title, tag, build) {
-    const body = el("div", { class: "block-body" });
-    const det = el("details", { class: "block" }, el("summary", {}, title, tag ? el("span", { class: "tag" }, "· " + tag) : null), body);
-    let built = false;
-    det.addEventListener("toggle", () => {
-      if (det.open && !built) {
-        built = true;
-        body.append(...build());
-      }
-    });
-    return det;
-  }
-
-  function seoFields(doc, ctx) {
-    const out = [];
-    const titleEl = doc.querySelector("title");
-    if (titleEl) {
-      out.push(inputField("Título de la pestaña / Google", titleEl.textContent.trim(), (v) => {
-        titleEl.textContent = v;
-        markDirty(ctx.kind, ctx.file);
-      }));
-    }
-    const metas = [
-      ['meta[name="description"]', "Descripción para Google", "textarea"],
-      ['meta[property="og:title"]', "Título al compartir (WhatsApp, Facebook)", "text"],
-      ['meta[property="og:description"]', "Descripción al compartir", "textarea"],
-    ];
-    for (const [sel, label, type] of metas) {
-      const m = doc.querySelector(sel);
-      if (!m) continue;
-      out.push(inputField(label, m.getAttribute("content") || "", (v) => {
-        m.setAttribute("content", v);
-        markDirty(ctx.kind, ctx.file);
-      }, type));
-    }
-    return out;
-  }
-
-  // ---- Detección de contenido editable ----
-  const isSkipped = (n) => n.matches(SKIP_SELECTOR);
-
-  function isTextLeaf(n) {
-    if (!n.textContent.trim()) return false;
-    for (const d of n.querySelectorAll("*")) if (!INLINE_TAGS.has(d.tagName)) return false;
+  function confirmLeave() {
+    if (!state.dirty) return true;
+    if (!confirm("Hiciste cambios y todavía no los guardaste.\n\n¿Salir igual? (Los cambios se pierden)")) return false;
+    state.dirty = false;
     return true;
   }
 
-  function signature(n) {
-    const cls = [...n.classList].filter((c) => !/^(is-|faq-active|active|aos)/.test(c)).sort().join(".");
-    return n.tagName + "." + cls;
+  // Rutas: "" (inicio) · "s/<id>" (lista) · "s/<id>/nuevo" · "s/<id>/<n>" · "s/<id>/extra" · "clave"
+  function go(hash) {
+    if (!confirmLeave()) return;
+    if (location.hash.slice(1) === hash) route();
+    else location.hash = hash;
   }
 
-  function isList(n) {
-    const kids = [...n.children].filter((k) => !["SCRIPT", "TEMPLATE"].includes(k.tagName));
-    if (!kids.length) return false;
-    const always = n.matches(".swiper-wrapper, ul, ol, .faq-container");
-    if (!always && kids.length < 2) return false;
-    if (!kids.every((k) => LIST_ITEM_TAGS.has(k.tagName))) return false;
-    const sig = signature(kids[0]);
-    return kids.every((k) => signature(k) === sig) && !isTextLeaf(n);
-  }
-
-  function listName(n) {
-    if (n.matches(".swiper-wrapper")) return ["Carrusel", "bi-images"];
-    if (n.matches(".faq-container")) return ["Preguntas", "bi-question-circle"];
-    if (n.matches(".social-links")) return ["Redes sociales", "bi-share"];
-    if (n.matches("ul, ol")) return ["Lista", "bi-list-ul"];
-    return ["Grupo de tarjetas", "bi-grid"];
-  }
-
-  // Recorre un elemento y devuelve los campos para editarlo
-  function walk(node, ctx) {
-    const out = [];
-    for (const c of node.children) {
-      if (isSkipped(c)) continue;
-      out.push(...fieldsFor(c, ctx));
+  let lastHash = location.hash;
+  window.addEventListener("hashchange", () => {
+    if (state.dirty && !confirm("Hiciste cambios y todavía no los guardaste.\n\n¿Salir igual? (Los cambios se pierden)")) {
+      history.replaceState(null, "", lastHash || "#");
+      return;
     }
-    return out;
-  }
+    state.dirty = false;
+    route();
+  });
 
-  function fieldsFor(c, ctx) {
-    const out = [];
-    if (c.hasAttribute("data-count")) return [countdownField(c, ctx)];
-    if (c.tagName === "IMG") return [imageField(c, ctx)];
-    if (c.tagName === "IFRAME") return [attrField(c, "src", "Enlace del contenido incrustado", ctx)];
-    if (c.hasAttribute("data-links")) return [buyLinksField(c, ctx)];
-    if (isList(c)) return [...out, listField(c, ctx)];
-    if (isTextLeaf(c)) {
-      out.push(textField(c, ctx));
-      if (c.tagName === "A") out.push(hrefField(c, ctx));
-      return out;
+  async function route() {
+    lastHash = location.hash;
+    const parts = decodeURIComponent(location.hash.slice(1)).split("/").filter(Boolean);
+    const content = $("#content");
+    content.innerHTML = '<div class="loading"><i class="bi bi-arrow-repeat spin"></i> Cargando…</div>';
+    window.scrollTo(0, 0);
+    try {
+      if (parts[0] === "clave") return renderPassword();
+      const sec = parts[0] === "s" && SECTIONS.find((s) => s.id === parts[1]);
+      if (!sec) return renderHome();
+      if (sec.kind === "single") return await renderSingle(sec);
+      if (!parts[2]) return await renderList(sec);
+      if (parts[2] === "extra") return await renderExtra(sec);
+      return await renderItemForm(sec, parts[2] === "nuevo" ? null : Number(parts[2]));
+    } catch (e) {
+      console.error(e);
+      content.innerHTML = "";
+      content.append(el("div", { class: "card" },
+        el("h2", {}, "No se pudo cargar"),
+        el("p", { class: "error" }, e.status === 401 ? "La sesión venció. Tocá «Salir» y volvé a entrar." : e.message),
+        el("button", { class: "btn btn-ghost", onclick: () => go("") }, icon("bi-house"), "Volver al inicio")));
     }
-    if (c.tagName === "A") out.push(hrefField(c, ctx));
-    out.push(...walk(c, ctx));
-    return out;
   }
 
-  function sectionFields(sec, ctx) {
-    const out = walk(sec, ctx);
-    if (sec.querySelector("#media-grid")) out.push(el("div", { class: "note" }, icon("bi-info-circle"), " Las notas de esta sección se editan en ", linkTo("data:data/medios.json", "Listas → En los medios"), "."));
-    if (sec.querySelector("#servicios-grid")) out.push(el("div", { class: "note" }, icon("bi-info-circle"), " Las tarjetas de servicios se editan en ", linkTo("data:data/servicios.json", "Listas → Servicios"), "."));
-    if (!out.length) out.push(el("p", { class: "muted" }, "Esta sección no tiene contenido editable."));
-    return out;
-  }
-
-  function linkTo(view, text) {
-    return el("a", { href: "#" + view, onclick: (e) => { e.preventDefault(); go(view); } }, text);
-  }
-
-  // ---- Campos ----
-  const TEXT_LABELS = { H1: "Título principal", H2: "Título", H3: "Subtítulo", H4: "Subtítulo", H5: "Subtítulo", P: "Texto", A: "Texto del botón / enlace", LI: "Ítem", BLOCKQUOTE: "Cita", SPAN: "Texto", DIV: "Texto" };
-
-  function textField(node, ctx) {
-    const label = TEXT_LABELS[node.tagName] || "Texto";
-    return el("div", { class: "field" }, el("label", {}, label), richEditor(node, ctx, /^H[1-4]$/.test(node.tagName)));
-  }
-
-  function richEditor(node, ctx, isTitle) {
-    const area = el("div", { class: "rte-area" + (isTitle ? " is-title" : ""), contenteditable: "true", html: node.innerHTML.trim() });
-    const exec = (cmd, val) => { area.focus(); document.execCommand(cmd, false, val); sync(); };
-    const tools = el("div", { class: "rte-tools" },
-      el("button", { type: "button", title: "Negrita", onmousedown: (e) => e.preventDefault(), onclick: () => exec("bold") }, icon("bi-type-bold")),
-      el("button", { type: "button", title: "Cursiva", onmousedown: (e) => e.preventDefault(), onclick: () => exec("italic") }, icon("bi-type-italic")),
-      el("button", { type: "button", title: "Agregar enlace", onmousedown: (e) => e.preventDefault(), onclick: () => {
-        const url = prompt("Pegá el enlace (https://…)");
-        if (url) exec("createLink", url.trim());
-      } }, icon("bi-link-45deg")),
-      el("button", { type: "button", title: "Quitar formato", onmousedown: (e) => e.preventDefault(), onclick: () => { exec("unlink"); exec("removeFormat"); } }, icon("bi-eraser"))
+  // =========================
+  // INICIO
+  // =========================
+  function renderHome() {
+    const content = $("#content");
+    content.innerHTML = "";
+    const name = (state.user || "").split(" ")[0];
+    content.append(
+      el("h1", { class: "hello" }, name ? `Hola, ${name}` : "Hola"),
+      el("p", { class: "lead" }, "¿Qué querés cambiar hoy? Tocá una opción."),
+      el("div", { class: "tiles" }, SECTIONS.map((s) =>
+        el("button", { type: "button", class: "tile", onclick: () => go("s/" + s.id) },
+          el("span", { class: "tile-icon" }, icon(s.icon)),
+          el("span", { class: "tile-text" },
+            el("strong", {}, s.title),
+            el("span", {}, s.tileText)),
+          icon("bi-chevron-right tile-arrow")))),
+      el("div", { class: "help-card" },
+        el("h2", {}, icon("bi-lightbulb"), " Cómo funciona"),
+        el("ol", {},
+          el("li", {}, "Elegí qué querés cambiar."),
+          el("li", {}, "Completá o corregí los datos."),
+          el("li", {}, "Tocá ", el("strong", {}, "Guardar y publicar"), ". En 1 o 2 minutos se ve en la web.")),
+        el("p", { class: "muted" }, "Si algo no sale como esperabas, no pasa nada: todos los cambios quedan guardados y se pueden recuperar.")),
+      el("p", { class: "footer-links" },
+        el("a", { href: "#clave" }, icon("bi-key"), " Cambiar contraseña"))
     );
-    function sync() {
-      const html = sanitizeInline(area.innerHTML);
-      if (html !== node.innerHTML.trim()) {
-        node.innerHTML = html;
-        markDirty(ctx.kind, ctx.file);
+  }
+
+  function backButton(label, hash) {
+    return el("button", { type: "button", class: "back-btn", onclick: () => go(hash) }, icon("bi-arrow-left"), " ", label);
+  }
+
+  function header(sec, subtitle) {
+    return el("div", { class: "view-head" },
+      el("h1", {}, icon(sec.icon), " ", sec.title),
+      subtitle ? el("p", { class: "lead" }, subtitle) : null);
+  }
+
+  // =========================
+  // DATOS
+  // =========================
+  async function loadData(sec) {
+    const { text, sha } = await readFile(sec.file);
+    return { json: JSON.parse(text), sha };
+  }
+
+  // Publica el JSON (y las fotos nuevas que use) en un solo commit
+  async function publish(sec, data, what) {
+    const out = JSON.stringify(data.json, null, 2) + "\n";
+    const uploads = [];
+    for (const [path, up] of state.uploads) if (out.includes(path)) uploads.push({ path, b64: up.b64 });
+    const files = [...uploads, { path: sec.file, b64: textToB64(out), baseSha: data.sha }];
+    const sha = await commitFiles(files, `Panel: ${state.user} ${what}`);
+    data.sha = files[files.length - 1].newSha;
+    for (const u of uploads) state.uploads.delete(u.path);
+    watchDeploy(sha);
+    return sha;
+  }
+
+  function publishError(e) {
+    console.error(e);
+    if (e.conflict) return "Alguien más guardó cambios en esta sección al mismo tiempo. Recargá la página y volvé a intentarlo.";
+    if (e.status === 401) return "La sesión venció. Tocá «Salir» y volvé a entrar.";
+    if (!navigator.onLine) return "Parece que no hay internet. Revisá la conexión y probá de nuevo.";
+    return "No se pudo guardar (" + e.message + "). Probá de nuevo en un momento.";
+  }
+
+  async function watchDeploy(sha) {
+    if (!state.canPages) return;
+    for (let i = 0; i < 36; i++) {
+      await new Promise((r) => setTimeout(r, 5000));
+      try {
+        const b = await gh(repoPath("/pages/builds/latest"));
+        if (b.commit === sha && b.status === "built") {
+          toast("✓ Ya se ve en la web.", "ok", 6000);
+          return;
+        }
+        if (b.commit === sha && b.status === "errored") {
+          toast("Hubo un problema publicando. Avisale a Patricio.", "err", 10000);
+          return;
+        }
+      } catch {
+        state.canPages = false; // el token no puede leer Pages: no pasa nada
+        return;
       }
     }
-    area.addEventListener("input", sync);
-    area.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        document.execCommand("insertLineBreak");
-        sync();
-      }
-    });
-    area.addEventListener("paste", (e) => {
-      e.preventDefault();
-      const text = (e.clipboardData || window.clipboardData).getData("text/plain");
-      document.execCommand("insertText", false, text);
-    });
-    return el("div", { class: "rte" }, tools, area);
   }
 
-  // Deja sólo formato de texto simple (negrita, cursiva, enlaces, saltos de línea, íconos)
-  function sanitizeInline(html) {
-    const tpl = document.createElement("template");
-    tpl.innerHTML = html;
-    const walkClean = (root) => {
-      for (const n of [...root.childNodes]) {
-        if (n.nodeType === 8) { n.remove(); continue; }
-        if (n.nodeType !== 1) continue;
-        walkClean(n);
-        let tag = n.tagName;
-        if (tag === "DIV" || tag === "P") {
-          n.replaceWith(...n.childNodes, document.createElement("br"));
-          continue;
+  // Cartel verde después de guardar
+  let flash = null;
+  function showFlash(content) {
+    if (!flash) return;
+    content.prepend(el("div", { class: "flash", role: "status" }, icon("bi-check-circle-fill"),
+      el("div", {}, el("strong", {}, flash), el("div", {}, "En 1 o 2 minutos lo vas a ver en la web."))));
+    flash = null;
+  }
+
+  // =========================
+  // LISTA (talleres, libros, medios, servicios)
+  // =========================
+  async function renderList(sec) {
+    const data = await loadData(sec);
+    const arr = (data.json[sec.key] = data.json[sec.key] || []);
+    const content = $("#content");
+    content.innerHTML = "";
+    const article = sec.oneArticle || "un";
+
+    content.append(
+      backButton("Volver al inicio", ""),
+      header(sec),
+      el("button", { type: "button", class: "btn btn-primary btn-big btn-add", onclick: () => go(`s/${sec.id}/nuevo`) },
+        icon("bi-plus-circle"), ` Agregar ${article} ${sec.one}`)
+    );
+    showFlash(content);
+
+    if (sec.sortNote) content.append(el("p", { class: "muted" }, icon("bi-info-circle"), " ", sec.sortNote));
+
+    // Índices reales en el JSON, en el orden en que se muestran
+    const order = arr.map((_, i) => i);
+    if (sec.compare) order.sort((a, b) => sec.compare(arr[a], arr[b]));
+
+    const list = el("div", { class: "rows" });
+    if (!arr.length) list.append(el("p", { class: "muted" }, `Todavía no hay nada cargado. Tocá «Agregar ${article} ${sec.one}».`));
+
+    order.forEach((idx, pos) => {
+      const item = arr[idx];
+      const img = sec.itemImg && sec.itemImg(item);
+      const busy = (b) => content.querySelectorAll(".row button").forEach((x) => (x.disabled = b));
+
+      const move = async (dir) => {
+        busy(true);
+        const j = idx + dir;
+        [arr[idx], arr[j]] = [arr[j], arr[idx]];
+        try {
+          await publish(sec, data, `cambió el orden de ${sec.title}`);
+          flash = "Listo, se cambió el orden.";
+          route();
+        } catch (e) {
+          toast(publishError(e), "err", 10000);
+          [arr[idx], arr[j]] = [arr[j], arr[idx]];
+          busy(false);
         }
-        if (!INLINE_TAGS.has(tag)) { n.replaceWith(...n.childNodes); continue; }
-        for (const a of [...n.attributes]) {
-          const keep = a.name === "class" || a.name === "style" || (tag === "A" && ["href", "target", "rel", "title"].includes(a.name));
-          if (!keep || /^on/i.test(a.name) || (a.name === "href" && /^\s*javascript:/i.test(a.value))) n.removeAttribute(a.name);
+      };
+
+      const del = async () => {
+        const name = clean(sec.itemTitle(item), 60) || sec.one;
+        if (!confirm(`¿Querés borrar «${name}» de la web?\n\nEsto no se puede deshacer desde el panel.`)) return;
+        busy(true);
+        arr.splice(idx, 1);
+        try {
+          await publish(sec, data, `borró «${name}» de ${sec.title}`);
+          flash = `Listo, se borró «${name}».`;
+          route();
+        } catch (e) {
+          toast(publishError(e), "err", 10000);
+          arr.splice(idx, 0, item);
+          busy(false);
         }
-        if (tag === "A" && /^https?:/.test(n.getAttribute("href") || "") && !n.hasAttribute("target")) {
-          n.setAttribute("target", "_blank");
-          n.setAttribute("rel", "noopener");
+      };
+
+      list.append(el("div", { class: "row" },
+        sec.itemImg ? el("div", { class: "row-img" }, img ? el("img", { src: resolveSrc(img), alt: "", loading: "lazy" }) : icon(sec.icon)) : null,
+        el("div", { class: "row-text" },
+          el("strong", {}, clean(sec.itemTitle(item), 90) || "(sin título)"),
+          sec.itemSub && sec.itemSub(item) ? el("span", {}, sec.itemSub(item)) : null),
+        el("div", { class: "row-actions" },
+          el("button", { type: "button", class: "btn btn-primary", onclick: () => go(`s/${sec.id}/${idx}`) }, icon("bi-pencil"), " Editar"),
+          sec.sortable ? el("button", { type: "button", class: "btn btn-ghost btn-icon", title: "Mover más arriba", "aria-label": "Mover más arriba", disabled: pos === 0, onclick: () => move(-1) }, icon("bi-arrow-up")) : null,
+          sec.sortable ? el("button", { type: "button", class: "btn btn-ghost btn-icon", title: "Mover más abajo", "aria-label": "Mover más abajo", disabled: pos === order.length - 1, onclick: () => move(1) }, icon("bi-arrow-down")) : null,
+          el("button", { type: "button", class: "btn btn-danger btn-icon", title: "Borrar", "aria-label": "Borrar", onclick: del }, icon("bi-trash")))));
+    });
+    content.append(list);
+
+    if (sec.sortable && arr.length > 1) content.append(el("p", { class: "muted small" }, "Con las flechas ", icon("bi-arrow-up"), icon("bi-arrow-down"), " cambiás el orden en que aparecen en la web."));
+    if (sec.extra) {
+      content.append(el("button", { type: "button", class: "btn btn-ghost", onclick: () => go(`s/${sec.id}/extra`) }, icon("bi-card-text"), " " + sec.extra.title));
+    }
+    content.append(viewOnSite(sec));
+  }
+
+  function viewOnSite(sec) {
+    return el("p", { class: "footer-links" },
+      el("a", { href: "../" + sec.page.replace(/^\.\//, ""), target: "_blank", rel: "noopener" }, icon("bi-box-arrow-up-right"), " Ver cómo se ve en la web"));
+  }
+
+  // =========================
+  // FORMULARIOS
+  // =========================
+  async function renderItemForm(sec, idx) {
+    const data = await loadData(sec);
+    const arr = (data.json[sec.key] = data.json[sec.key] || []);
+    const isNew = idx == null;
+    if (!isNew && !arr[idx]) return go("s/" + sec.id);
+    const item = isNew ? sec.blank() : clone(arr[idx]);
+
+    const content = $("#content");
+    content.innerHTML = "";
+    content.append(
+      backButton("Volver a " + sec.title, "s/" + sec.id),
+      el("div", { class: "view-head" },
+        el("h1", {}, isNew ? `Agregar ${sec.oneArticle || "un"} ${sec.one}` : `Editar ${sec.one}`),
+        !isNew ? el("p", { class: "lead" }, clean(sec.itemTitle(item), 90)) : null)
+    );
+
+    const form = buildForm(sec.fields, item, sec, arr);
+    content.append(form.node);
+
+    content.append(saveBar(async () => {
+      const err = form.validate();
+      if (err) return err;
+      if (isNew) arr.unshift(item);
+      else arr[idx] = item;
+      const name = clean(sec.itemTitle(item), 60);
+      await publish(sec, data, `${isNew ? "agregó" : "editó"} «${name}» en ${sec.title}`);
+      flash = isNew ? `Listo, se agregó «${name}».` : `Listo, se guardaron los cambios de «${name}».`;
+      state.dirty = false;
+      go("s/" + sec.id);
+    }, () => go("s/" + sec.id), () => {
+      if (isNew) arr.shift();
+    }));
+  }
+
+  async function renderSingle(sec) {
+    const data = await loadData(sec);
+    const obj = clone(data.json);
+    const content = $("#content");
+    content.innerHTML = "";
+    content.append(backButton("Volver al inicio", ""), header(sec));
+    showFlash(content);
+    const form = buildForm(sec.fields, obj, sec);
+    content.append(form.node);
+    content.append(saveBar(async () => {
+      const err = form.validate();
+      if (err) return err;
+      data.json = obj;
+      await publish(sec, data, `editó ${sec.title}${obj.fecha ? " (cierra " + obj.fecha + ")" : ""}`);
+      flash = "Listo, se guardaron los cambios.";
+      state.dirty = false;
+      route();
+    }, () => go("")));
+    content.append(viewOnSite(sec));
+  }
+
+  async function renderExtra(sec) {
+    const data = await loadData(sec);
+    const obj = clone(data.json[sec.extra.key] || {});
+    const content = $("#content");
+    content.innerHTML = "";
+    content.append(
+      backButton("Volver a " + sec.title, "s/" + sec.id),
+      el("div", { class: "view-head" }, el("h1", {}, sec.extra.title),
+        el("p", { class: "lead" }, "Es el texto que aparece arriba de las tarjetas, según la pestaña elegida.")));
+    const form = buildForm(sec.extra.fields, obj, sec);
+    content.append(form.node);
+    content.append(saveBar(async () => {
+      data.json[sec.extra.key] = obj;
+      await publish(sec, data, `editó ${sec.extra.title.toLowerCase()} de ${sec.title}`);
+      flash = "Listo, se guardaron los textos.";
+      state.dirty = false;
+      go("s/" + sec.id);
+    }, () => go("s/" + sec.id)));
+  }
+
+  // Botones Guardar / Cancelar. onSave devuelve un texto si hay un error de validación.
+  function saveBar(onSave, onCancel, onFail) {
+    const msg = el("p", { class: "error", role: "alert", hidden: true });
+    const btn = el("button", { type: "button", class: "btn btn-primary btn-big" }, icon("bi-cloud-arrow-up"), " Guardar y publicar");
+    btn.addEventListener("click", async () => {
+      msg.hidden = true;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Publicando… no cierres la página';
+      try {
+        const err = await onSave();
+        if (err) {
+          msg.textContent = err;
+          msg.hidden = false;
         }
-        if (tag === "SPAN" && !n.attributes.length) n.replaceWith(...n.childNodes);
+      } catch (e) {
+        if (onFail) onFail();
+        msg.textContent = publishError(e);
+        msg.hidden = false;
+      } finally {
+        if (btn.isConnected) {
+          btn.disabled = false;
+          btn.innerHTML = "";
+          btn.append(icon("bi-cloud-arrow-up"), " Guardar y publicar");
+        }
       }
+    });
+    return el("div", { class: "save-bar" }, msg,
+      el("div", { class: "save-buttons" }, btn,
+        el("button", { type: "button", class: "btn btn-ghost btn-big", onclick: onCancel }, "Cancelar")));
+  }
+
+  function buildForm(fields, obj, sec, arr) {
+    const node = el("div", { class: "card form" });
+    const checks = [];
+    let row = null;
+    for (const f of fields) {
+      const fieldEl = field(f, obj, sec, arr);
+      if (f.required) {
+        checks.push(() => {
+          const v = obj[f.key];
+          return v == null || String(v).trim() === "" ? `Falta completar «${f.label}».` : null;
+        });
+      }
+      if (f.type === "url") {
+        checks.push(() => {
+          const v = (obj[f.key] || "").trim();
+          return v && /\s/.test(v) ? `El enlace de «${f.label}» tiene espacios. Revisá que esté bien copiado.` : null;
+        });
+      }
+      if (f.type === "checks") {
+        checks.push(() => ((obj[f.key] || []).length ? null : `Marcá al menos una opción en «${f.label}».`));
+      }
+      if (f.half) {
+        if (!row) { row = el("div", { class: "field-row" }); node.append(row); }
+        row.append(fieldEl);
+        if (row.children.length === 2) row = null;
+      } else {
+        row = null;
+        node.append(fieldEl);
+      }
+    }
+    return {
+      node,
+      validate: () => {
+        for (const c of checks) {
+          const e = c();
+          if (e) return e;
+        }
+        return null;
+      },
     };
-    walkClean(tpl.content);
-    let out = tpl.innerHTML.replace(/&nbsp;/g, " ");
-    out = out.replace(/(<br>\s*)+$/, "");
-    return out.trim();
   }
 
-  function inputField(label, value, onChange, type = "text") {
-    const input = type === "textarea"
-      ? el("textarea", {}, value)
-      : el("input", { type, value });
-    input.addEventListener("input", () => onChange(input.value));
-    return el("div", { class: "field" }, el("label", {}, label), input);
+  function field(f, obj, sec, arr) {
+    const set = (v) => { obj[f.key] = v; state.dirty = true; };
+    const val = obj[f.key];
+    const id = "f-" + f.key;
+    const label = el("label", { for: id }, f.label, f.required ? el("span", { class: "req" }, " *") : null);
+    const hint = f.hint ? el("p", { class: "hint" }, f.hint) : null;
+    const wrap = (...inner) => el("div", { class: "field" + (f.big ? " field-big" : "") }, label, hint, ...inner);
+
+    if (f.type === "textarea") {
+      const t = el("textarea", { id, rows: 6 }, val || "");
+      t.addEventListener("input", () => set(t.value));
+      return wrap(t);
+    }
+
+    if (f.type === "date") {
+      const input = el("input", { id, type: "date", value: val || "" });
+      const info = el("p", { class: "date-info" });
+      const upd = () => {
+        if (!input.value) { info.textContent = ""; return; }
+        let txt = fmtDate(input.value, true);
+        if (f.big) {
+          const [y, m, d] = input.value.split("-").map(Number);
+          const days = Math.ceil((new Date(y, m - 1, d, 23, 59, 59) - new Date()) / 86400000);
+          txt += days > 1 ? ` · faltan ${days} días` : days === 1 ? " · ¡es hoy!" : " · esta fecha ya pasó: la cuenta regresiva no se va a mostrar";
+        }
+        info.textContent = txt;
+      };
+      input.addEventListener("input", () => { set(input.value); upd(); });
+      upd();
+      return wrap(input, info);
+    }
+
+    if (f.type === "tipo") {
+      const group = el("div", { class: "type-pick", role: "radiogroup" });
+      const draw = () => {
+        group.innerHTML = "";
+        for (const [v, l, ic] of TIPOS_MEDIO) {
+          group.append(el("button", { type: "button", role: "radio", "aria-checked": String(obj[f.key] === v),
+            class: "type-btn" + (obj[f.key] === v ? " is-on" : ""),
+            onclick: () => { set(v); draw(); } }, icon(ic), el("span", {}, l)));
+        }
+      };
+      draw();
+      return el("div", { class: "field" }, el("label", {}, f.label), group);
+    }
+
+    if (f.type === "checks") {
+      const current = new Set(Array.isArray(val) ? val : []);
+      const box = el("div", { class: "big-checks" }, f.options.map(([v, l]) => {
+        const cb = el("input", { type: "checkbox", checked: current.has(v) });
+        cb.addEventListener("change", () => {
+          cb.checked ? current.add(v) : current.delete(v);
+          set(f.options.map(([k]) => k).filter((k) => current.has(k)));
+        });
+        return el("label", { class: "big-check" }, cb, el("span", {}, l));
+      }));
+      return el("div", { class: "field" }, el("label", {}, f.label), hint, box);
+    }
+
+    if (f.type === "image") return imageField(f, obj, set, label, hint, arr);
+    if (f.type === "tiendas") return storesField(f, obj, label);
+
+    const input = el("input", { id, type: f.type === "url" ? "url" : "text", value: val == null ? "" : val,
+      placeholder: f.type === "url" ? "https://…" : "", autocomplete: "off", spellcheck: f.type === "url" ? "false" : null });
+    input.addEventListener("input", () => set(f.nullable && !input.value.trim() ? null : f.type === "url" ? input.value.trim() : input.value));
+    return wrap(input);
   }
 
-  function hrefField(a, ctx) {
-    const href = a.getAttribute("href") || "";
-    return inputField("Enlace (a dónde lleva)", href, (v) => {
-      a.setAttribute("href", v.trim());
-      markDirty(ctx.kind, ctx.file);
-    }, "url");
-  }
+  function imageField(f, obj, set, label, hint, arr) {
+    const preview = el("div", { class: "img-preview" });
+    const drawPreview = () => {
+      preview.innerHTML = "";
+      const v = obj[f.key];
+      if (v) preview.append(el("img", { src: resolveSrc(v), alt: "" }));
+      else preview.append(el("span", { class: "muted" }, icon("bi-image"), " Sin foto"));
+    };
+    drawPreview();
 
-  function attrField(node, attr, label, ctx) {
-    return inputField(label, node.getAttribute(attr) || "", (v) => {
-      node.setAttribute(attr, v.trim());
-      markDirty(ctx.kind, ctx.file);
-    }, "url");
-  }
-
-  function countdownField(node, ctx) {
-    const v = (node.getAttribute("data-count") || "").replace(/\//g, "-");
-    return inputField("Fecha límite de la cuenta regresiva", /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : "", (val) => {
-      if (!val) return;
-      node.setAttribute("data-count", val.replace(/-/g, "/"));
-      markDirty(ctx.kind, ctx.file);
-    }, "date");
-  }
-
-  // Imagen: subir/cambiar foto + texto alternativo
-  function imageField(img, ctx) {
-    const thumb = el("img", { src: resolveSrc(img.getAttribute("src")), alt: "" });
-    const path = el("div", { class: "path" }, img.getAttribute("src") || "");
-    const changeBtn = el("button", { type: "button", class: "btn btn-ghost btn-sm" }, icon("bi-upload"), "Cambiar foto");
-    changeBtn.addEventListener("click", async () => {
+    const status = el("p", { class: "img-status" });
+    const pick = el("button", { type: "button", class: "btn btn-ghost btn-big" }, icon("bi-upload"), " Elegir foto");
+    pick.addEventListener("click", async () => {
       const file = await pickFile();
       if (!file) return;
-      changeBtn.disabled = true;
+      pick.disabled = true;
+      status.textContent = "Preparando la foto…";
       try {
-        const newPath = await stageUpload(file, img.getAttribute("alt") || file.name);
-        img.setAttribute("src", newPath);
-        img.removeAttribute("srcset");
-        img.removeAttribute("data-src");
-        thumb.src = resolveSrc(newPath);
-        path.innerHTML = "";
-        path.append(el("span", { class: "pending" }, "Foto nueva lista para publicar"));
-        markDirty(ctx.kind, ctx.file);
+        const p = await stageUpload(file, obj.titulo || obj.title || file.name);
+        set(p);
+        drawPreview();
+        status.textContent = "✓ Foto lista. Se sube cuando toques «Guardar y publicar».";
       } catch (e) {
-        toast("No se pudo usar esa imagen: " + e.message, "err");
+        status.textContent = "";
+        toast("No se pudo usar esa foto: " + e.message, "err");
       } finally {
-        changeBtn.disabled = false;
+        pick.disabled = false;
       }
     });
-    const alt = el("input", { type: "text", value: img.getAttribute("alt") || "" });
-    alt.addEventListener("input", () => {
-      img.setAttribute("alt", alt.value);
-      markDirty(ctx.kind, ctx.file);
-    });
-    return el("div", { class: "field img-field" },
-      el("div", { class: "img-thumb" }, thumb),
-      el("div", { class: "img-meta" }, changeBtn, path,
-        el("label", {}, "Descripción de la foto (ayuda a Google y a personas con baja visión)"), alt));
+    const remove = el("button", { type: "button", class: "btn btn-ghost" }, icon("bi-x-lg"), " Quitar foto");
+    remove.addEventListener("click", () => { set(""); drawPreview(); status.textContent = ""; });
+
+    const extras = [];
+    // Logos ya cargados en otras apariciones en medios
+    if (f.logos && arr) {
+      const seen = new Set();
+      const logos = arr.map((m) => m.cover).filter((c) => c && !seen.has(c) && seen.add(c));
+      if (logos.length) {
+        extras.push(el("p", { class: "hint" }, "O usá un logo que ya está cargado:"),
+          el("div", { class: "logo-pick" }, logos.map((c) =>
+            el("button", { type: "button", class: "logo-btn", title: "Usar este logo", onclick: () => {
+              set(c); drawPreview(); status.textContent = "✓ Logo elegido.";
+            } }, el("img", { src: resolveSrc(c), alt: "" })))));
+      }
+    }
+
+    return el("div", { class: "field" }, label, hint,
+      el("div", { class: "img-field" }, preview,
+        el("div", { class: "img-actions" }, pick, remove, status)),
+      ...extras);
   }
 
-  // Libros: links de compra (data-links) y título del cartel
-  function buyLinksField(btn, ctx) {
-    let links = [];
-    try { links = JSON.parse(btn.getAttribute("data-links") || "[]"); } catch {}
-    const wrap = el("div", { class: "field links-editor" });
-    const save = () => {
-      btn.setAttribute("data-links", JSON.stringify(links.filter((l) => l.label || l.url)));
-      markDirty(ctx.kind, ctx.file);
-    };
-    const titleInput = el("input", { type: "text", value: btn.getAttribute("data-title") || "" });
-    titleInput.addEventListener("input", () => {
-      btn.setAttribute("data-title", titleInput.value);
-      markDirty(ctx.kind, ctx.file);
-    });
-    const rows = el("div");
+  function storesField(f, obj, label) {
+    const stores = (obj[f.key] = Array.isArray(obj[f.key]) ? obj[f.key] : []);
+    const rows = el("div", { class: "stores" });
     const draw = () => {
       rows.innerHTML = "";
-      links.forEach((l, i) => {
-        const name = el("input", { type: "text", value: l.label || "", placeholder: "Tienda (ej: Amazon)" });
-        const url = el("input", { type: "url", value: l.url || "", placeholder: "https://…" });
-        name.addEventListener("input", () => { l.label = name.value; save(); });
-        url.addEventListener("input", () => { l.url = url.value.trim(); save(); });
-        rows.append(el("div", { class: "link-row" }, name, url,
-          el("button", { type: "button", class: "icon-btn", title: "Quitar tienda", onclick: () => { links.splice(i, 1); save(); draw(); } }, icon("bi-trash"))));
+      stores.forEach((s, i) => {
+        const name = el("input", { type: "text", value: s.nombre || "", placeholder: "Nombre de la tienda (ej: Amazon)" });
+        const url = el("input", { type: "url", value: s.url || "", placeholder: "Enlace al libro en esa tienda (https://…)", spellcheck: "false" });
+        name.addEventListener("input", () => { s.nombre = name.value; state.dirty = true; });
+        url.addEventListener("input", () => { s.url = url.value.trim(); state.dirty = true; });
+        rows.append(el("div", { class: "store" },
+          el("div", { class: "store-num" }, String(i + 1)),
+          el("div", { class: "store-inputs" }, name, url),
+          el("button", { type: "button", class: "btn btn-danger btn-icon", title: "Quitar esta tienda", "aria-label": "Quitar esta tienda",
+            onclick: () => { stores.splice(i, 1); state.dirty = true; draw(); } }, icon("bi-trash"))));
       });
     };
     draw();
-    wrap.append(
-      el("label", {}, "Título en la ventana «Conseguir libro»"), titleInput,
-      el("label", {}, "Dónde comprarlo"), rows,
-      el("button", { type: "button", class: "btn btn-ghost btn-sm add-btn", onclick: () => { links.push({ label: "", url: "" }); draw(); } }, icon("bi-plus-lg"), "Agregar tienda")
-    );
-    return wrap;
-  }
-
-  // Lista / carrusel: agregar, duplicar, borrar y reordenar
-  function listField(container, ctx) {
-    const [name, ico] = listName(container);
-    const box = el("div", { class: "list" });
-    const items = () => [...container.children].filter((k) => !["SCRIPT", "TEMPLATE"].includes(k.tagName));
-    const changed = () => { markDirty(ctx.kind, ctx.file); draw(); };
-
-    const draw = () => {
-      box.innerHTML = "";
-      const list = items();
-      box.append(el("div", { class: "list-head" },
-        el("h3", {}, icon(ico), `${name} (${list.length})`),
-        el("button", { type: "button", class: "btn btn-ghost btn-sm", onclick: () => { duplicate(list[list.length - 1]); changed(); } }, icon("bi-plus-lg"), "Agregar")));
-      list.forEach((item, i) => box.append(listItem(item, i, list.length)));
-    };
-
-    const listItem = (item, i, total) => {
-      const img = item.tagName === "IMG" ? item : item.querySelector("img");
-      const titleNode = item.querySelector("h1, h2, h3, h4") || item;
-      const title = clean(titleNode.textContent, 70) || (img ? clean(img.getAttribute("alt"), 70) : "") || (item.getAttribute("href") || "Elemento");
-      const body = el("div", { class: "item-body" });
-      const stop = (fn) => (e) => { e.preventDefault(); e.stopPropagation(); fn(); };
-      const det = el("details", { class: "item" },
-        el("summary", {},
-          el("span", { class: "item-num" }, String(i + 1)),
-          img ? el("img", { class: "item-thumb", src: resolveSrc(img.getAttribute("src")), alt: "" }) : null,
-          el("span", { class: "item-title" }, title),
-          el("span", { class: "item-tools" },
-            el("button", { type: "button", class: "icon-btn", title: "Subir", disabled: i === 0, onclick: stop(() => { move(item, -1); changed(); }) }, icon("bi-arrow-up")),
-            el("button", { type: "button", class: "icon-btn", title: "Bajar", disabled: i === total - 1, onclick: stop(() => { move(item, 1); changed(); }) }, icon("bi-arrow-down")),
-            el("button", { type: "button", class: "icon-btn", title: "Duplicar", onclick: stop(() => { duplicate(item); changed(); }) }, icon("bi-copy")),
-            el("button", { type: "button", class: "icon-btn del", title: "Eliminar", disabled: total <= 1, onclick: stop(() => {
-              if (confirm(`¿Eliminar «${title}»?`)) { remove(item); changed(); }
-            }) }, icon("bi-trash")))),
-        body);
-      let built = false;
-      det.addEventListener("toggle", () => {
-        if (det.open && !built) {
-          built = true;
-          const fields = fieldsFor(item, ctx);
-          body.append(...(fields.length ? fields : [el("p", { class: "muted" }, "Sin contenido editable.")]));
-        }
-      });
-      return det;
-    };
-
-    draw();
-    return box;
-  }
-
-  function prevWhitespace(n) {
-    const p = n.previousSibling;
-    return p && p.nodeType === 3 && !p.textContent.trim() ? p : null;
-  }
-
-  function duplicate(item) {
-    const clone = item.cloneNode(true);
-    clone.classList.remove("faq-active", "is-active");
-    clone.querySelectorAll("[id]").forEach((n) => n.removeAttribute("id"));
-    clone.removeAttribute("id");
-    const ws = prevWhitespace(item);
-    item.after(ws ? ws.cloneNode() : "", clone);
-  }
-
-  function remove(item) {
-    let p = item.previousSibling;
-    while (p && p.nodeType === 3 && !p.textContent.trim()) p = p.previousSibling;
-    if (p && p.nodeType === 8) p.remove(); // comentario tipo <!-- Slide 3 -->
-    const ws = prevWhitespace(item);
-    if (ws) ws.remove();
-    item.remove();
-  }
-
-  function move(item, dir) {
-    const sib = (n, d) => {
-      let s = d < 0 ? n.previousElementSibling : n.nextElementSibling;
-      while (s && ["SCRIPT", "TEMPLATE"].includes(s.tagName)) s = d < 0 ? s.previousElementSibling : s.nextElementSibling;
-      return s;
-    };
-    const other = sib(item, dir);
-    if (!other) return;
-    if (dir < 0) other.before(item);
-    else other.after(item);
+    return el("div", { class: "field" }, label,
+      el("p", { class: "hint" }, "Aparecen al tocar «Conseguir libro»."),
+      rows,
+      el("button", { type: "button", class: "btn btn-ghost", onclick: () => { stores.push({ nombre: "", url: "" }); state.dirty = true; draw(); } },
+        icon("bi-plus-lg"), " Agregar otra tienda"));
   }
 
   // =========================
@@ -965,276 +1054,21 @@
   }
 
   // =========================
-  // LISTAS JSON (data/*.json)
+  // CONTRASEÑA
   // =========================
-  async function loadData(file, force = false) {
-    if (state.data[file] && !force) return state.data[file];
-    const { text, sha } = await readFile(file);
-    state.data[file] = { json: JSON.parse(text), sha, dirty: false };
-    return state.data[file];
-  }
-
-  async function renderDataset(file) {
-    const ds = DATASETS.find((d) => d.file === file);
-    if (!ds) throw new Error("Lista desconocida");
-    const entry = await loadData(file);
-    const ctx = { kind: "data", file };
+  function renderPassword() {
     const content = $("#content");
     content.innerHTML = "";
-    content.append(el("div", { class: "view-head" },
-      el("div", {}, el("h1", {}, ds.label), el("p", { class: "muted" }, ds.intro))));
-
-    for (const obj of ds.objects || []) {
-      const target = (entry.json[obj.key] = entry.json[obj.key] || {});
-      const card = el("div", { class: "card" }, el("h2", {}, obj.label));
-      for (const f of obj.fields) card.append(dataField(target, f, ctx));
-      content.append(card);
-    }
-    for (const list of ds.lists || []) {
-      const arr = (entry.json[list.key] = entry.json[list.key] || []);
-      const card = el("div", { class: "card" });
-      content.append(card);
-      drawDataList(card, arr, list, ctx);
-    }
-  }
-
-  function drawDataList(card, arr, list, ctx) {
-    const redraw = () => { markDirty(ctx.kind, ctx.file); drawDataList(card, arr, list, ctx); };
-    card.innerHTML = "";
-    card.append(el("div", { class: "list-head" },
-      el("h2", {}, `${list.label} (${arr.length})`),
-      el("button", { type: "button", class: "btn btn-primary btn-sm", onclick: () => {
-        arr.unshift(JSON.parse(JSON.stringify(list.blank)));
-        redraw();
-        card.querySelector("details.item").open = true;
-      } }, icon("bi-plus-lg"), "Agregar " + list.itemLabel.toLowerCase())));
-
-    arr.forEach((item, i) => {
-      const body = el("div", { class: "item-body" });
-      const thumbSrc = list.thumbField && item[list.thumbField];
-      const titleSpan = el("span", { class: "item-title" }, clean(item[list.titleField], 70) || list.itemLabel);
-      const stop = (fn) => (e) => { e.preventDefault(); e.stopPropagation(); fn(); };
-      const det = el("details", { class: "item" },
-        el("summary", {},
-          el("span", { class: "item-num" }, String(i + 1)),
-          thumbSrc ? el("img", { class: "item-thumb", src: resolveSrc(thumbSrc), alt: "" }) : null,
-          titleSpan,
-          el("span", { class: "item-tools" },
-            el("button", { type: "button", class: "icon-btn", title: "Subir", disabled: i === 0, onclick: stop(() => { [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]]; redraw(); }) }, icon("bi-arrow-up")),
-            el("button", { type: "button", class: "icon-btn", title: "Bajar", disabled: i === arr.length - 1, onclick: stop(() => { [arr[i + 1], arr[i]] = [arr[i], arr[i + 1]]; redraw(); }) }, icon("bi-arrow-down")),
-            el("button", { type: "button", class: "icon-btn", title: "Duplicar", onclick: stop(() => { arr.splice(i + 1, 0, JSON.parse(JSON.stringify(item))); redraw(); }) }, icon("bi-copy")),
-            el("button", { type: "button", class: "icon-btn del", title: "Eliminar", onclick: stop(() => {
-              if (confirm(`¿Eliminar «${clean(item[list.titleField], 60)}»?`)) { arr.splice(i, 1); redraw(); }
-            }) }, icon("bi-trash")))),
-        body);
-      let built = false;
-      det.addEventListener("toggle", () => {
-        if (!det.open || built) return;
-        built = true;
-        let row = null;
-        for (const f of list.fields) {
-          const fieldEl = dataField(item, f, ctx, () => {
-            if (f.key === list.titleField) titleSpan.textContent = clean(item[f.key], 70) || list.itemLabel;
-          });
-          if (f.half) {
-            if (!row) { row = el("div", { class: "field-row" }); body.append(row); }
-            row.append(fieldEl);
-            if (row.children.length === 2) row = null;
-          } else {
-            row = null;
-            body.append(fieldEl);
-          }
-        }
-      });
-      card.append(det);
-    });
-  }
-
-  function dataField(obj, f, ctx, after) {
-    const set = (v) => { obj[f.key] = v; markDirty(ctx.kind, ctx.file); if (after) after(); };
-    const val = obj[f.key];
-    if (f.type === "select") {
-      const sel = el("select", {}, f.options.map(([v, l]) => el("option", { value: v, selected: v === val }, l)));
-      sel.addEventListener("change", () => set(sel.value));
-      return el("div", { class: "field" }, el("label", {}, f.label), sel);
-    }
-    if (f.type === "checks") {
-      const current = new Set(Array.isArray(val) ? val : []);
-      const chips = el("div", { class: "chips" }, f.options.map(([v, l]) => {
-        const cb = el("input", { type: "checkbox", checked: current.has(v) });
-        cb.addEventListener("change", () => {
-          cb.checked ? current.add(v) : current.delete(v);
-          set(f.options.map(([k]) => k).filter((k) => current.has(k)));
-        });
-        return el("label", { class: "check" }, cb, l);
-      }));
-      return el("div", { class: "field" }, el("label", {}, f.label), chips);
-    }
-    if (f.type === "image") {
-      const thumb = el("img", { src: resolveSrc(val), alt: "" });
-      const pathEl = el("div", { class: "path" }, val || "Sin imagen");
-      const btn = el("button", { type: "button", class: "btn btn-ghost btn-sm" }, icon("bi-upload"), val ? "Cambiar imagen" : "Subir imagen");
-      btn.addEventListener("click", async () => {
-        const file = await pickFile();
-        if (!file) return;
-        try {
-          const p = await stageUpload(file, obj.title || obj.titulo || file.name);
-          thumb.src = resolveSrc(p);
-          pathEl.innerHTML = "";
-          pathEl.append(el("span", { class: "pending" }, "Imagen nueva lista para publicar"));
-          set(p);
-        } catch (e) {
-          toast("No se pudo usar esa imagen: " + e.message, "err");
-        }
-      });
-      return el("div", { class: "field" }, el("label", {}, f.label),
-        el("div", { class: "img-field" }, el("div", { class: "img-thumb" }, thumb), el("div", { class: "img-meta" }, btn, pathEl)));
-    }
-    return inputField(f.label, val == null ? "" : val, (v) => set(f.nullable && !v.trim() ? null : v), f.type);
-  }
-
-  // =========================
-  // GUARDAR / DESCARTAR / VISTA PREVIA
-  // =========================
-  function collectChanges() {
-    const files = [];
-    const names = [];
-    let html = "";
-    for (const [file, p] of Object.entries(state.pages)) {
-      if (!p.dirty) continue;
-      const out = serializePage(p.doc);
-      html += out;
-      files.push({ path: file, b64: textToB64(out), baseSha: p.sha, entry: p });
-      names.push((PAGES.find((x) => x.file === file) || {}).label || file);
-    }
-    let json = "";
-    for (const [file, d] of Object.entries(state.data)) {
-      if (!d.dirty) continue;
-      const out = JSON.stringify(d.json, null, 2) + "\n";
-      json += out;
-      files.push({ path: file, b64: textToB64(out), baseSha: d.sha, entry: d });
-      names.push((DATASETS.find((x) => x.file === file) || {}).label || file);
-    }
-    // Sólo se suben las fotos que siguen en uso
-    const uploads = [];
-    for (const [path, up] of state.uploads) {
-      if (html.includes(path) || json.includes(path)) uploads.push({ path, b64: up.b64 });
-    }
-    return { files, uploads, names };
-  }
-
-  async function save() {
-    const { files, uploads, names } = collectChanges();
-    if (!files.length) return;
-    const btn = $("#save-btn");
-    btn.disabled = true;
-    const label = btn.innerHTML;
-    btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Publicando…';
-    try {
-      const fotos = uploads.length ? ` (+${uploads.length} foto${uploads.length > 1 ? "s" : ""})` : "";
-      const message = `Panel: ${state.user} editó ${names.join(", ")}${fotos}`;
-      const sha = await commitFiles([...uploads, ...files], message);
-      btn.innerHTML = label;
-      for (const f of files) {
-        f.entry.sha = f.newSha;
-        f.entry.dirty = false;
-      }
-      for (const u of uploads) state.uploads.delete(u.path);
-      updateSaveBar();
-      toast("¡Guardado! Los cambios se verán en la web en 1 o 2 minutos.", "ok", 7000);
-      watchDeploy(sha);
-    } catch (e) {
-      console.error(e);
-      if (e.conflict) {
-        toast(e.message + " Descartá tus cambios en esa página y volvé a hacerlos.", "err", 10000);
-      } else if (e.status === 401) {
-        toast("La sesión venció. Volvé a entrar.", "err", 8000);
-      } else {
-        toast("No se pudo guardar: " + e.message, "err", 8000);
-      }
-    } finally {
-      btn.innerHTML = label;
-      updateSaveBar();
-    }
-  }
-
-  async function watchDeploy(sha) {
-    if (!state.canPages) return;
-    for (let i = 0; i < 36; i++) {
-      await new Promise((r) => setTimeout(r, 5000));
-      try {
-        const b = await gh(repoPath("/pages/builds/latest"));
-        if (b.commit === sha && b.status === "built") {
-          toast("✓ Ya está publicado en la web.", "ok", 6000);
-          return;
-        }
-        if (b.commit === sha && b.status === "errored") {
-          toast("GitHub tuvo un problema publicando. Avisale a Patricio.", "err", 10000);
-          return;
-        }
-      } catch {
-        state.canPages = false; // el token no tiene permiso de leer Pages: no pasa nada
-        return;
-      }
-    }
-  }
-
-  async function discard() {
-    if (!confirm("¿Descartar todos los cambios sin guardar?")) return;
-    for (const f of Object.keys(state.pages)) if (state.pages[f].dirty) delete state.pages[f];
-    for (const f of Object.keys(state.data)) if (state.data[f].dirty) delete state.data[f];
-    state.uploads.clear();
-    updateSaveBar();
-    go(state.view);
-  }
-
-  function openPreview(file) {
-    const entry = state.pages[file];
-    if (!entry) return;
-    let html = serializePage(entry.doc);
-    for (const [path, up] of state.uploads) html = html.split(path).join(up.url);
-    const base = new URL("../", location.href).href;
-    html = html.replace(/<head([^>]*)>/i, `<head$1><base href="${base}">`);
-    $("#preview-frame").srcdoc = html;
-    $("#preview").hidden = false;
-  }
-
-  // =========================
-  // HISTORIAL
-  // =========================
-  async function renderHistory() {
-    const commits = await gh(repoPath(`/commits?sha=${CFG.branch}&per_page=40`));
-    const content = $("#content");
-    content.innerHTML = "";
-    content.append(el("div", { class: "view-head" },
-      el("div", {}, el("h1", {}, "Historial de cambios"), el("p", { class: "muted" }, "Quién cambió qué y cuándo. Los más recientes primero."))));
-    const fmt = new Intl.DateTimeFormat("es-AR", { dateStyle: "medium", timeStyle: "short" });
-    const table = el("table", { class: "table" },
-      el("thead", {}, el("tr", {}, el("th", {}, "Fecha"), el("th", {}, "Persona"), el("th", {}, "Cambio"))),
-      el("tbody", {}, commits.map((c) =>
-        el("tr", {},
-          el("td", {}, fmt.format(new Date(c.commit.author.date))),
-          el("td", {}, el("strong", {}, c.commit.author.name)),
-          el("td", {}, c.commit.message.split("\n")[0])))));
-    content.append(table);
-  }
-
-  // =========================
-  // AJUSTES (contraseña)
-  // =========================
-  function renderSettings() {
-    const content = $("#content");
-    content.innerHTML = "";
-    content.append(el("div", { class: "view-head" },
-      el("div", {}, el("h1", {}, "Ajustes"), el("p", { class: "muted" }, "Contraseña de acceso al panel."))));
+    content.append(backButton("Volver al inicio", ""),
+      el("div", { class: "view-head" }, el("h1", {}, icon("bi-key"), " Cambiar contraseña")));
 
     const pass1 = el("input", { type: "password", autocomplete: "new-password" });
     const pass2 = el("input", { type: "password", autocomplete: "new-password" });
-    const newToken = el("input", { type: "password", autocomplete: "off", placeholder: "Dejalo vacío para usar el token actual" });
-    const btn = el("button", { type: "button", class: "btn btn-primary btn-block" }, icon("bi-shield-lock"), "Guardar contraseña");
+    const newToken = el("input", { type: "password", autocomplete: "off", placeholder: "Dejalo vacío" });
+    const btn = el("button", { type: "button", class: "btn btn-primary btn-big" }, icon("bi-shield-lock"), " Guardar contraseña");
     btn.addEventListener("click", async () => {
-      if (pass1.value.length < 10) return toast("La contraseña tiene que tener al menos 10 caracteres.", "err");
-      if (pass1.value !== pass2.value) return toast("Las contraseñas no coinciden.", "err");
+      if (pass1.value.length < 10) return toast("La contraseña tiene que tener al menos 10 letras o números.", "err");
+      if (pass1.value !== pass2.value) return toast("Las dos contraseñas no son iguales.", "err");
       if (looksLikeToken(pass1.value)) return toast("La contraseña no puede ser un token.", "err");
       btn.disabled = true;
       const prevToken = state.token;
@@ -1257,49 +1091,13 @@
       }
     });
 
-    content.append(
-      el("div", { class: "card" },
-        el("h2", {}, "Contraseña del panel"),
-        el("p", { class: "muted" }, "Es la contraseña que usan todas las personas que administran la web. Usá una frase larga, fácil de recordar y difícil de adivinar (ej: «MaiaTina y los dinos 2026»)."),
-        el("label", {}, "Nueva contraseña"), pass1,
-        el("label", {}, "Repetir contraseña"), pass2,
-        el("label", {}, "Token nuevo de GitHub (sólo si el anterior venció)"), newToken,
-        btn),
-      el("div", { class: "card" },
-        el("h2", {}, "Cerrar sesión"),
-        el("p", { class: "muted" }, "Si entraste desde una computadora que no es tuya, cerrá la sesión al terminar."),
-        el("button", { type: "button", class: "btn btn-ghost", onclick: logout }, icon("bi-box-arrow-right"), "Salir del panel"))
-    );
-  }
-
-  function renderHelp() {
-    const content = $("#content");
-    content.innerHTML = "";
-    content.append(
-      el("div", { class: "view-head" }, el("div", {}, el("h1", {}, "Cómo usar el panel"))),
-      el("div", { class: "card" },
-        el("h2", {}, "Editar la web en 4 pasos"),
-        el("ol", {},
-          el("li", {}, "Elegí una página a la izquierda (por ejemplo, ", el("strong", {}, "Inicio"), ")."),
-          el("li", {}, "Abrí la sección que querés cambiar: ahí están sus textos, fotos y carruseles."),
-          el("li", {}, "Hacé los cambios. Podés usar ", el("strong", {}, "Vista previa"), " para ver cómo queda antes de publicar."),
-          el("li", {}, "Tocá ", el("strong", {}, "Guardar y publicar"), ". En 1 o 2 minutos se ve en la web."))),
-      el("div", { class: "card" },
-        el("h2", {}, "Carruseles, libros y listas"),
-        el("ul", {},
-          el("li", {}, el("strong", {}, "Agregar:"), " crea una copia del último elemento; después cambiale la foto y los textos."),
-          el("li", {}, icon("bi-copy"), " duplica, ", icon("bi-arrow-up"), icon("bi-arrow-down"), " cambia el orden, ", icon("bi-trash"), " elimina."),
-          el("li", {}, "Los libros tienen además la lista de tiendas donde comprarlos."),
-          el("li", {}, "«En los medios» y las tarjetas de «Servicios» están en ", el("strong", {}, "Listas"), "."))),
-      el("div", { class: "card" },
-        el("h2", {}, "Fotos"),
-        el("ul", {},
-          el("li", {}, "Podés subir fotos del celular o la compu: el panel las achica solo para que la web cargue rápido."),
-          el("li", {}, "Completá la descripción de cada foto: ayuda a que la web aparezca en Google."))),
-      el("div", { class: "card" },
-        el("h2", {}, "¿Me equivoqué?"),
-        el("p", {}, "Mientras no guardes, ", el("strong", {}, "Descartar"), " vuelve todo atrás. Si ya publicaste, en ", el("strong", {}, "Historial"), " queda registrado cada cambio con tu nombre, así se puede recuperar la versión anterior."))
-    );
+    content.append(el("div", { class: "card form" },
+      el("p", { class: "muted" }, "Es la contraseña que usan todas las personas que administran la web. Usá una frase larga y fácil de recordar (ej: «MaiaTina y los dinos 2026»)."),
+      el("div", { class: "field" }, el("label", {}, "Nueva contraseña"), pass1),
+      el("div", { class: "field" }, el("label", {}, "Repetí la contraseña"), pass2),
+      el("details", { class: "advanced" }, el("summary", {}, "Avanzado"),
+        el("div", { class: "field" }, el("label", {}, "Token nuevo de GitHub (sólo si el anterior venció)"), newToken)),
+      el("div", { class: "save-buttons" }, btn)));
   }
 
   // =========================
@@ -1311,27 +1109,10 @@
       const p = $("#login-pass");
       p.type = p.type === "password" ? "text" : "password";
     });
-    $("#save-btn").addEventListener("click", save);
-    $("#discard-btn").addEventListener("click", discard);
     $("#logout-btn").addEventListener("click", logout);
-    $("#menu-btn").addEventListener("click", () => $("#sidebar").classList.toggle("open"));
-    $("#preview-close").addEventListener("click", () => {
-      $("#preview").hidden = true;
-      $("#preview-frame").srcdoc = "";
-    });
-    $("#sidebar").addEventListener("click", (e) => {
-      const b = e.target.closest("button[data-view]");
-      if (b) go(b.dataset.view);
-    });
-    document.addEventListener("keydown", (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s" && !$("#app").hidden) {
-        e.preventDefault();
-        if (!$("#save-btn").disabled) save();
-      }
-      if (e.key === "Escape" && !$("#preview").hidden) $("#preview-close").click();
-    });
+    $("#home-btn").addEventListener("click", () => go(""));
     window.addEventListener("beforeunload", (e) => {
-      if (hasChanges()) {
+      if (state.dirty) {
         e.preventDefault();
         e.returnValue = "";
       }

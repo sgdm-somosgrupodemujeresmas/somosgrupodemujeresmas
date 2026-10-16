@@ -43,9 +43,12 @@
     return null;
   }
 
-  // SIEMPRE usa cover. Si falta, usa un genérico local para evitar roturas.
+  // Usa cover. Si falta: miniatura de YouTube o un genérico local.
   function guessThumb(item) {
-    return item.cover || "assets/img/misc/thumb-generic.jpg";
+    if (item.cover) return item.cover;
+    const yt = getYouTubeId(item.url);
+    if (yt) return `https://img.youtube.com/vi/${yt}/hqdefault.jpg`;
+    return "assets/img/media/thumb-template.png";
   }
 
   function formatDate(iso) {
